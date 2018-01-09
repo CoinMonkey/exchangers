@@ -1,0 +1,34 @@
+{
+    "name": "CoinMonkey/exchangers",
+    "description": "Popular crypto exchanger's API implements",
+    "keywords": ["crypto", "currency", "shapeshift", "changelly", "bittrex", "bitfinex", "poloniex", "yobit", "coinmonkey"],
+    "homepage": "https://coinmonkey.io",
+    "type": "library",
+    "license": "Apache",
+    "support": {
+        "source": "https://github.com/pistol88"
+    },
+    "authors": [
+        {
+            "name": "Ilya Pistol",
+            "email": "admin@coinmonkey.io"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.1.0",
+        "achse/php-shapeshift-io-api": "*",
+        "pepijnolivier/laravel-yobit": "*",
+        "coinmonkey/interfaces": "*",
+        "coinmonkey/exceptions": "*",
+        "coinmonkey/entities": "*"
+    },
+    "config": {
+        "process-timeout": 1800
+    },
+    "autoload": {
+        "psr-4": {
+            "coinmonkey\\exchangers\\": ""
+        }
+    },
+}
