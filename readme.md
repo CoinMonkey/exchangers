@@ -1,3 +1,3 @@
-# PHP Libs for popular crypto-exchanhgers
+# PHP Libs for popular crypto-exchangers
 
 Coming soon...
