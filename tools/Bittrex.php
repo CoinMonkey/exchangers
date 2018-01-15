@@ -23,7 +23,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -55,7 +55,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -85,7 +85,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -144,7 +144,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -169,7 +169,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -190,13 +190,13 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
         if(!$obj = json_decode($execResult)) {
-			throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex ', $execResult, null, 1);
-			 
+            throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex ', $execResult, null, 1);
+             
             return [
                 'asks' => [],
                 'bids' => [],
@@ -207,7 +207,7 @@ class Bittrex {
         $result = $obj->result;
 
         if(!isset($result->sell)) {
-			throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex', $execResult, null, 1);
+            throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex', $execResult, null, 1);
 
             return [
                 'asks' => [],
@@ -249,22 +249,22 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
         $obj = json_decode($execResult);
         $order = $obj->result;
 
-		if($order->Type != 'LIMIT_BUY') {
+        if($order->Type != 'LIMIT_BUY') {
             $price = $order->Quantity*$order->Limit;
         } else {
             $price = $order->Quantity;
         }
         $price = $price-($price*$this->getFees()['take']);
-		
+        
         return [
-			'raw_data' => $order,
+            'raw_data' => $order,
             'open' => $order->IsOpen,
             'market' => $order->Exchange,
             'time' => strtotime($order->Opened),
@@ -306,7 +306,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -329,7 +329,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -351,7 +351,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -367,7 +367,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -398,7 +398,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -428,7 +428,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -458,7 +458,7 @@ class Bittrex {
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 

@@ -58,7 +58,7 @@ class ShapeShift implements InstantExchangerInterface
 
         return (new Status($ourStatus, (isset($return->transaction)) ? $return->transaction : null));
     }
-	
+    
     public function getEstimateAmount(Sum $sum, Currency $currency2) : Order
     {
         $rate = $this->getRates($sum->getCurrency()->code . '-' . $currency2->code);

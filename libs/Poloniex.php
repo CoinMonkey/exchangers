@@ -195,13 +195,13 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
 
     public function getEstimateAmount(Sum $sum, Currency $currency2) : Order
     {
-		$min = config('app.minimums')[$this->getId()][$sum->getCurrency()->getCode()];
-		$max = config('app.maximums')[$this->getId()][$sum->getCurrency()->getCode()];
-			
-		if($min > $sum->getSum() | $max < $sum->getSum()) {
-			throw new \coinmonkey\exceptions\ErrorException("Minimum is $min " . $sum->getCurrency()->getCode() . " and maximum is $max " . $sum->getCurrency()->getCode());
-		}
-		
+        $min = config('app.minimums')[$this->getId()][$sum->getCurrency()->getCode()];
+        $max = config('app.maximums')[$this->getId()][$sum->getCurrency()->getCode()];
+            
+        if($min > $sum->getSum() | $max < $sum->getSum()) {
+            throw new \coinmonkey\exceptions\ErrorException("Minimum is $min " . $sum->getCurrency()->getCode() . " and maximum is $max " . $sum->getCurrency()->getCode());
+        }
+        
         $market = CurrencyHelper::getMarketName($this->getMarkets(), $sum->getCurrency(), $currency2);
         $direction = $this->getDirection($sum->getCurrency(), $currency2);
         $rounding = PHP_ROUND_HALF_UP;

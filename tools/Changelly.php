@@ -31,7 +31,7 @@ class Changelly
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $requestHeaders);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
 
         $response = curl_exec($ch);
         curl_close($ch);
@@ -39,11 +39,11 @@ class Changelly
         $json = json_decode($response);
 
         if(!$json | (!isset($json->result) && isset($json->error))) {
-			if(isset($json->error) && $json->error) {
-				throw new \coinmonkey\exceptions\ErrorException($json->error->message);
-			} else {
-				throw new \coinmonkey\exceptions\ErrorException("Unknown error");
-			}
+            if(isset($json->error) && $json->error) {
+                throw new \coinmonkey\exceptions\ErrorException($json->error->message);
+            } else {
+                throw new \coinmonkey\exceptions\ErrorException("Unknown error");
+            }
         }
 
         return $json->result;

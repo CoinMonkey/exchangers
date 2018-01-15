@@ -95,7 +95,7 @@ class Evercoin
             'EVERCOIN-API-KEY: ' . $this->key,
             'Content-Type: application/json;charset=UTF-8',
         ]);
-		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         
         if($params) {
             curl_setopt($ch, CURLOPT_POST, 1);

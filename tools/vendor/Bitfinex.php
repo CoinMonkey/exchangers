@@ -1016,7 +1016,7 @@ class Bitfinex {
      *
      * Check whether bitfinex API returned an error message
      *
-     * @param array $ch 	Curl resource
+     * @param array $ch     Curl resource
      * @return bool
      */
     private function is_bitfinex_error($ch) {

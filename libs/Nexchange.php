@@ -28,15 +28,15 @@ class Nexchange implements InstantExchangerInterface
         $this->cache = $cache;
     }
 
-	public function getBalances()
-	{
-		return [
-			'BTC' => 999999999999,
-			'LTC' => 999999999999,
-			'ETH' => 999999999999,
-		];
-	}
-	
+    public function getBalances()
+    {
+        return [
+            'BTC' => 999999999999,
+            'LTC' => 999999999999,
+            'ETH' => 999999999999,
+        ];
+    }
+    
     public function withdraw(string $address, Sum $sum)
     {
         return null;
@@ -61,19 +61,19 @@ class Nexchange implements InstantExchangerInterface
 
         if($order->status != $ourStatus) {
             $order->writeLog($ourStatus);
-		}
+        }
 
-		if($transaction = $order->getTransaction($order->currency2)) {
-			$info = $this->tool->request('getTransactions', ['address' => $wallet->address, "limit" => 10, "offset" => 0]);
+        if($transaction = $order->getTransaction($order->currency2)) {
+            $info = $this->tool->request('getTransactions', ['address' => $wallet->address, "limit" => 10, "offset" => 0]);
 
-			if($info) {
-				foreach($info as $tx) {
-					$transaction->hash = $tx->payoutHash;
-					$transaction->save();
-					break;
-				}
-			}
-		}
+            if($info) {
+                foreach($info as $tx) {
+                    $transaction->hash = $tx->payoutHash;
+                    $transaction->save();
+                    break;
+                }
+            }
+        }
 
         return (new Status($ourStatus, (isset($return->transaction)) ? $return->transaction : null));
     }

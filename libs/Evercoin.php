@@ -50,14 +50,14 @@ class Evercoin implements InstantExchangerInterface
 
         if($order->status != $ourStatus) {
             $order->writeLog($ourStatus);
-		}
+        }
 
-		if(isset($return->batch_out) && $transaction = $order->getTransaction($order->currency2)) {
-			if($return->batch_out) {
-				$transaction->hash = $return->batch_out;
-				$transaction->save();
-			}
-		}
+        if(isset($return->batch_out) && $transaction = $order->getTransaction($order->currency2)) {
+            if($return->batch_out) {
+                $transaction->hash = $return->batch_out;
+                $transaction->save();
+            }
+        }
 
         return (new Status($ourStatus, (isset($return->batch_out)) ? $return->batch_out : null));
     }
@@ -92,26 +92,26 @@ class Evercoin implements InstantExchangerInterface
             'id' => $res->exchange_id,
         ];
     }
-	
-	private function getCurrencyName($code) {
-		$data = [
-			'BTC' => 'bitcoin_BTC',
-			'ETH' => 'ethereum_ETH',
-			'BCH' => 'bitcoincash_BCH',
-			'XRP' => 'ripple_XRP',
-			'DASH' => 'dash_DASH',
-			'XMR' => 'monero_XMR',
-			'ZEC' => 'zcash_ZEC',
-			'LTC' => 'litecoin_LTC',
-			'DOGE' => 'dogecoin_DOGE',
-			'ETC' => 'ethereumclassic_ETC',
-			'REP' => 'augur_REP',
-			'GNT' => 'golem_GNT',
-			'GNO' => 'gnosis_GNO',
-			'LSK' => 'lisk_LSK',
-			'PPC' => 'peercoin_PPC'
-		];
-		
-		return (isset($data[$code])) ? $data[$code] : false;
-	}
+    
+    private function getCurrencyName($code) {
+        $data = [
+            'BTC' => 'bitcoin_BTC',
+            'ETH' => 'ethereum_ETH',
+            'BCH' => 'bitcoincash_BCH',
+            'XRP' => 'ripple_XRP',
+            'DASH' => 'dash_DASH',
+            'XMR' => 'monero_XMR',
+            'ZEC' => 'zcash_ZEC',
+            'LTC' => 'litecoin_LTC',
+            'DOGE' => 'dogecoin_DOGE',
+            'ETC' => 'ethereumclassic_ETC',
+            'REP' => 'augur_REP',
+            'GNT' => 'golem_GNT',
+            'GNO' => 'gnosis_GNO',
+            'LSK' => 'lisk_LSK',
+            'PPC' => 'peercoin_PPC'
+        ];
+        
+        return (isset($data[$code])) ? $data[$code] : false;
+    }
 }

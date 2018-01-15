@@ -27,11 +27,11 @@ class Bitfinex {
         $this->tool = new BitfinexTool($api_key, $api_secret, $api_version = 'v1');
         $this->cache = $cache;
     }
-	
-	public function getTool()
-	{
-		return $this->tool;
-	}
+    
+    public function getTool()
+    {
+        return $this->tool;
+    }
 
     public function getBalances()
     {

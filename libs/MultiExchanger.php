@@ -30,11 +30,11 @@ class Multiexchanger implements InstantExchangerInterface
         }
     }
 
-	public function getStatus(OrderExchange $order) : Status
-	{
-		return new Status();
-	}
-	
+    public function getStatus(OrderExchange $order) : Status
+    {
+        return new Status();
+    }
+    
     public function getId() : string
     {
         return 'multi';

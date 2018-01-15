@@ -23,8 +23,8 @@ class ChangerAuth
     
     public function getApiTimestamp() {   
         if($this->_ApiTimestamp)
-			return $this->_ApiTimestamp;
-		else
-			return time();
+            return $this->_ApiTimestamp;
+        else
+            return time();
     }
 }
