@@ -1,5 +1,5 @@
 {
-    "name": "coinmonkey/exchangers",
+    "name": "coinmonkey/exchangers-api",
     "description": "Popular crypto exchanger's API implements",
     "keywords": ["crypto", "currency", "shapeshift", "changelly", "bittrex", "bitfinex", "poloniex", "yobit", "coinmonkey"],
     "homepage": "https://coinmonkey.io",
