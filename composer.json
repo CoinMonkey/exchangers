@@ -19,9 +19,9 @@
         "php": ">=7.1.0",
         "achse/php-shapeshift-io-api": "*",
         "pepijnolivier/laravel-yobit": "*",
-        "coinmonkey/interfaces": "*",
-        "coinmonkey/exceptions": "*",
-        "coinmonkey/entities": "*"
+        "coinmonkey/exchange-interfaces": "*",
+        "coinmonkey/exchange-exceptions": "*",
+        "coinmonkey/exchange-entities": "*"
     },
     "config": {
         "process-timeout": 1800
