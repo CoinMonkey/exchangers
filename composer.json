@@ -4,7 +4,7 @@
     "keywords": ["crypto", "currency", "shapeshift", "changelly", "bittrex", "bitfinex", "poloniex", "yobit", "coinmonkey"],
     "homepage": "https://coinmonkey.io",
     "type": "library",
-    "license": "Apache",
+    "license": "BSD 3-Clause",
     "support": {
         "source": "https://github.com/pistol88"
     },
