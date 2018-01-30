@@ -19,14 +19,14 @@ class Poloniex
         $this->cache = $cache;
     }
 
-    public function checkDeposit($currency, $amount, $time)
+    public function checkDeposit($coin, $amount, $time)
     {
         $result = $this->tool->get_deposit_withdraw_history($time);
 
         foreach($result['deposits'] as $deposit) {
             $tdiff = time()-$deposit['timestamp'];
 
-            if($deposit['currency'] == $currency && $deposit['amount'] == $amount && $tdiff < $time) {
+            if($deposit['Coin'] == $coin && $deposit['amount'] == $amount && $tdiff < $time) {
                 return [
                     'id' => null,
                     'confirmations' => $deposit['confirmations'],
@@ -36,20 +36,20 @@ class Poloniex
                 ];
             }
         }
-        
+
         return false;
     }
-    
-    public function checkWithdraw($currency, $address, $amount, $time)
+
+    public function checkWithdraw($coin, $address, $amount, $time)
     {
         $result = $this->tool->get_deposit_withdraw_history($time);
 
         foreach($result['withdrawals'] as $withdrawal) {
             $tdiff = time()-$withdrawal['timestamp'];
 
-            $realAmount = $withdrawal['amount']-config('app.exchangesWithdrawalFees')['poloniex'][$currency];
+            $realAmount = $withdrawal['amount']-config('app.exchangesWithdrawalFees')['poloniex'][$coin];
 
-            if($address == $withdrawal['address'] && $withdrawal['currency'] == $currency && (string) $realAmount == (string) $amount && $tdiff < $time) {
+            if($address == $withdrawal['address'] && $withdrawal['Coin'] == $coin && (string) $realAmount == (string) $amount && $tdiff < $time) {
                 if(!isset($withdrawal['txid'])) {
                     $status = explode(': ', $withdrawal['status']);
                     $withdrawal['txid'] = end($status);
@@ -63,19 +63,30 @@ class Poloniex
                 ];
             }
         }
-        
+
         return false;
     }
-    
-    public function withdraw(string $address, $amount, $currency)
+
+    public function withdraw(string $address, $amount, $coin)
     {
-        $result = $this->tool->withdraw($currency, $amount, $address);
+        $result = $this->tool->withdraw($coin, $amount, $address);
 
         if(!isset($result['response'])) {
-            throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make a withdraw a withdraw to $address $amount of $currency ");
+            throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make a withdraw a withdraw to $address $amount of $coin ");
         }
 
         return '1';
+    }
+
+    public function getMinConfirmations($coin) : integer
+    {
+        $currencies = $this->tool->get_currencies();
+
+        if(isset($currencies->{"$coin"})) {
+            return (int) $currencies->{"$coin"}->minConf;
+        }
+
+        throw new \coinmonkey\exceptions\ErrorException("Poloniex getting confirmations count error");
     }
 
     public function getMyActiveOrders($market) : array
@@ -95,8 +106,8 @@ class Poloniex
                     'time' => strtotime($order['date']),
                     'deal' => $order['type'],
                     'rate' => $order['rate'],
-                    'sum' => $order['startingAmount'],
-                    'sum_remaining' => $order['amount'],
+                    'Amount' => $order['startingAmount'],
+                    'Amount_remaining' => $order['amount'],
                 ];
             }
         }
@@ -104,9 +115,9 @@ class Poloniex
         return $return;
     }
 
-    public function getDepositAddress($currency)
+    public function getDepositAddress($coin)
     {
-        $address = $this->tool->get_deposit_address($currency);
+        $address = $this->tool->get_deposit_address($coin);
 
         if(!$address) {
             throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make an address for deposit.", $address);
@@ -133,8 +144,8 @@ class Poloniex
                     'deal' => $order['type'],
                     'price' => ($order['type'] == 'sell') ? $order['total'] : $order['amount'],
                     'rate' => $order['rate'],
-                    'sum' => $order['amount'],
-                    'sum_remaining' => $order['amount'],
+                    'Amount' => $order['amount'],
+                    'Amount_remaining' => $order['amount'],
                 ];
             }
         }
@@ -142,25 +153,25 @@ class Poloniex
         return false;
     }
 
-    public function buy($market, $sum, $rate)
+    public function buy($market, $amount, $rate)
     {
         //return true;
-        $result = $this->tool->buy($this->retransformMarket($market), $rate, $sum);
+        $result = $this->tool->buy($this->retransformMarket($market), $rate, $amount);
 
         if(isset($result['error'])) {
-            throw new \coinmonkey\exceptions\ErrorException("Poloniex coudn't buy $market, $sum, $rate", json_encode($result));
+            throw new \coinmonkey\exceptions\ErrorException("Poloniex coudn't buy $market, $amount, $rate", json_encode($result));
         }
 
         return $result['orderNumber'];
     }
 
-    public function sell($market, $sum, $rate)
+    public function sell($market, $amount, $rate)
     {
         //return true;
-        $result = $this->tool->sell($this->retransformMarket($market), $rate, $sum);
+        $result = $this->tool->sell($this->retransformMarket($market), $rate, $amount);
 
         if(isset($result['error'])) {
-            throw new \coinmonkey\exceptions\ErrorException("poloniex coudn't sell $market, $sum, $rate ", json_encode($result));
+            throw new \coinmonkey\exceptions\ErrorException("poloniex coudn't sell $market, $amount, $rate ", json_encode($result));
         }
 
         return $result['orderNumber'];
@@ -179,9 +190,9 @@ class Poloniex
 
         $return = [];
 
-        foreach($result as $wallet => $balance) {
+        foreach($result as $address => $balance) {
             if($balance > 0) {
-                $return[$wallet] = $balance;
+                $return[$address] = $balance;
             }
         }
 
@@ -190,8 +201,8 @@ class Poloniex
 
     public function getOrderBook(string $market)
     {
-        $content = file_get_contents('https://poloniex.com/public?command=returnOrderBook&currencyPair='.$this->retransformMarket($market).'&depth=10');
-        
+        $content = file_get_contents('https://poloniex.com/public?command=returnOrderBook&CoinPair='.$this->retransformMarket($market).'&depth=10');
+
         $result = json_decode($content);
 
         if(!isset($result->asks)) {

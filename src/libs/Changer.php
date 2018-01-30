@@ -4,8 +4,8 @@ namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\entities\Order;
-use coinmonkey\entities\Sum;
-use coinmonkey\entities\Currency;
+use coinmonkey\entities\Amount;
+use coinmonkey\entities\Coin;
 use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\exchangers\tools\Changer as ChangerTool;
 use coinmonkey\exchangers\tools\ChangerAuth;
@@ -19,9 +19,11 @@ class Changer implements InstantExchangerInterface
     private $cache;
     private $tool;
 
+    const STRING_ID = 'changer';
+
     public function getId() : string
     {
-        return 'changer';
+        return self::STRIND_ID;
     }
 
     public function __construct($name, $key, $secure, $cache = null)
@@ -33,64 +35,53 @@ class Changer implements InstantExchangerInterface
         $this->tool = new ChangerTool(new ChangerAuth($key, $secure));
     }
 
-    public function getStatus(OrderExchange $order) : Status
+    public function getExchangeStatus(OrderExchange $order) : ?integer
     {
-        $wallet = $order->getWallet()->first();
-        $return = $this->tool->checkExchange($wallet->external_id);
+        $address = $order->getAddress();
+        $return = $this->tool->checkExchange($address->getExchangerOrderId());
 
         $ourStatus = null;
         $status = $return->status;
 
         switch($status) {
             case 'new': $ourStatus = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
-            case 'processing': $ourStatus = OrderExchange::STATUS_PARTNER_PROCESSING; break;
+            case 'processing': $ourStatus = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
             case 'processed': $ourStatus = OrderExchange::STATUS_DONE; break;
             default: $ourStatus = OrderExchange::STATUS_FAIL; break;
-        }
-
-        if($order->status != $ourStatus) {
-            $order->writeLog($ourStatus);
-        }
-
-        if(isset($return->batch_out) && $transaction = $order->getTransaction($order->currency2)) {
-            if($return->batch_out) {
-                $transaction->hash = $return->batch_out;
-                $transaction->save();
-            }
         }
 
         return (new Status($ourStatus, (isset($return->batch_out)) ? $return->batch_out : null));
     }
 
-    public function getEstimateAmount(Sum $sum, Currency $currency2) : Order
+    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
     {
-        $give = $this->getCurrencyName($sum->getCurrency()->getCode());
-        $get = $this->getCurrencyName($currency2->getCode());
+        $give = $this->getCoinName($amount->getCoin()->getCode());
+        $get = $this->getCoinName($coin2->getCode());
         if(!$give | !$get) {
             throw new \coinmonkey\exceptions\ErrorException('Market don\'t exists');
         }
         $limits = $this->tool->getLimits($give, $get);
 
-        if($sum->getSum() < $limits->limits->min_amount | $sum->getSum() > $limits->limits->max_amount) {
-            throw new \coinmonkey\exceptions\ErrorException('Minimum is ' . $limits->limits->min_amount . ' ' . $sum->getCurrency()->getCode() . ' and maximum is ' . $limits->limits->max_amount . ' ' . $sum->getCurrency()->getCode());
+        if($amount->getGivenAmount() < $limits->limits->min_amount | $amount->getGivenAmount() > $limits->limits->max_amount) {
+            throw new \coinmonkey\exceptions\ErrorException('Minimum is ' . $limits->limits->min_amount . ' ' . $amount->getCoin()->getCode() . ' and maximum is ' . $limits->limits->max_amount . ' ' . $amount->getCoin()->getCode());
         }
 
         $rate = $this->tool->getRate($give, $get);
 
-        $cost = round($sum->getSum()*$rate->rate, 8);
+        $cost = round($amount->getGivenAmount()*$rate->rate, 8);
 
-        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $currency2);
+        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
     }
 
-    public function makeDepositAddress(string $clientAddress, Sum $sum, Currency $currency2) : array
+    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
     {
         $data = [
-            'send' => $this->getCurrencyName($sum->getCurrency()->getCode()),
-            'receive' => $this->getCurrencyName($currency2->getCode()),
-            'amount' => $sum->getSum(),
+            'send' => $this->getCoinName($amount->getCoin()->getCode()),
+            'receive' => $this->getCoinName($coin2->getCode()),
+            'amount' => $amount->getGivenAmount(),
             'receiver_id' => $clientAddress,
         ];
-        
+
         $res = $this->tool->makeExchange($data);
 
         return [
@@ -100,8 +91,8 @@ class Changer implements InstantExchangerInterface
             'id' => $res->exchange_id,
         ];
     }
-    
-    private function getCurrencyName($code) {
+
+    private function getCoinName($code) {
         $data = [
             'BTC' => 'bitcoin_BTC',
             'ETH' => 'ethereum_ETH',
@@ -119,7 +110,7 @@ class Changer implements InstantExchangerInterface
             'LSK' => 'lisk_LSK',
             'PPC' => 'peercoin_PPC'
         ];
-        
+
         return (isset($data[$code])) ? $data[$code] : false;
     }
 }

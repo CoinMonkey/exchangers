@@ -6,11 +6,10 @@ use coinmonkey\interfaces\ExchangerInterface;
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\exchangers\tools\Bittrex as BittrexTool;
 use coinmonkey\helpers\ExchangerHelper;
-use coinmonkey\helpers\CurrencyHelper;
+use coinmonkey\helpers\CoinHelper;
 use coinmonkey\entities\Order;
-use coinmonkey\entities\Sum;
-use coinmonkey\entities\Operation;
-use coinmonkey\entities\Currency;
+use coinmonkey\entities\Amount;
+use coinmonkey\entities\Coin;
 use Illuminate\Support\Facades\Cache;
 use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Status;
@@ -22,89 +21,89 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
     private $secret = '';
     private $tool;
     private $cache = true;
+    private $timeToCancel = 3600;
 
-    public function __construct($key, $secret, $cache = true)
+    const STRING_ID = 'bittrex';
+
+    public function __construct($key, $secret, $timeToCancel = 3600)
     {
         $this->key = $key;
         $this->secret = $secret;
         $this->tool = $this->tool = new BittrexTool($key, $secret, $cache);
-        $this->cache = $cache;
+        $this->timeToCancel = $timeToCancel;
     }
-    
+
+    public function getId() : string
+    {
+        return self::STRIND_ID;
+    }
+
     public function getTool()
     {
         return $this->tool;
     }
 
-    public function checkDeposit(Sum $sum, int $time)
+    public function checkDeposit(Amount $amount, int $time)
     {
-        return $this->tool->checkDeposit($sum->getCurrency()->getCode(), $sum->getSum(), $time);
-    }
-    
-    public function checkWithdraw(Sum $sum, $address, int $time)
-    {
-        return $this->tool->checkWithdraw($sum->getCurrency()->getCode(), $address, $sum->getSum(), $time);
-    }
-    
-    public function checkWithdrawById($id, $currency = null)
-    {
-        return $this->tool->checkWithdrawById($id, $currency);
-    }
-    
-    public function getMinConfirmations(Currency $currency)
-    {
-        return $this->tool->getMinConfirmations($currency->getCode());
-    }
-    
-    public function getStatus(OrderExchange $order) : Status
-    {
-        $txId = $order->getTransaction($order->currency2);
-        
-        return (new Status($order->status, $txId));
+        return $this->tool->checkDeposit($amount->getCoin()->getCode(), $amount->getAmount(), $time);
     }
 
-    public function getId() : string
+    public function checkWithdraw(Amount $amount, $address, int $time)
     {
-        return 'bittrex';
+        return $this->tool->checkWithdraw($amount->getCoin()->getCode(), $address, $amount->getAmount(), $time);
     }
 
-    public function withdraw(string $address, Sum $sum)
+    public function checkWithdrawById($id, $coin = null)
     {
-        return $this->tool->withdraw($address, $sum->getSum(), $sum->getCurrency()->getCode());
+        return $this->tool->checkWithdrawById($id, $coin);
     }
 
-    public function makeDepositAddress(string $clientAddress, Sum $sum, Currency $currency2) : array
+    public function getMinConfirmations(Coin $coin)
     {
-        return $this->tool->getDepositAddress($sum->getCurrency()->getCode());
-        //return CurrencyHelper::getInstance($sum->getCurrency()->getCode())->makeAddress();
+        return $this->tool->getMinConfirmations($coin->getCode());
     }
 
-    public function exchange(Sum $sum, Currency $currency2)
+    public function getExchangeStatus(OrderExchange $order) : integer
     {
-        $market = CurrencyHelper::getMarketName($this->getMarkets(), $sum->getCurrency(), $currency2);
-        $direction = $this->getDirection($sum->getCurrency(), $currency2);
+        return null;
+    }
 
-        $rate = $this->getRate($sum, $currency2);
+    public function withdraw(string $address, Amount $amount)
+    {
+        return $this->tool->withdraw($address, $amount->getAmount(), $amount->getCoin()->getCode());
+    }
+
+    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
+    {
+        return $this->tool->getDepositAddress($amount->getCoin()->getCode());
+    }
+
+    public function exchange(Amount $amount, Coin $coin2)
+    {
+        $market = CoinHelper::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
+        $direction = $this->getDirection($amount->getCoin(), $coin2);
+
+        $rate = $this->getRate($amount, $coin2);
 
         if($direction == 'bids') {
-            $id = $this->sell($market, $sum->getSum(), $rate);
+            $id = $this->sell($market, $amount->getAmount(), $rate);
         } else {
-            $id = $this->buy($market, ($sum->getSum()*(1/$rate)), $rate);
+            $id = $this->buy($market, ($amount->getAmount()*(1/$rate)), $rate);
         }
 
         return $this->getOrder($id);
     }
 
-    public function getRate(Sum $sum, Currency $currency2)
+    public function getRate(Amount $amount, Coin $coin2)
     {
-        $amount = $this->getEstimateAmount($sum, $currency2);
+        $amount = $this->getEstimateAmount($amount, $coin2);
 
-        $direction = $this->getDirection($sum->getCurrency(), $currency2);
+        $direction = $this->getDirection($amount->getCoin(), $coin2);
 
         if($direction == 'asks') {
-            $rate = $sum->getSum()/$amount->getSum();
+            $rate = $amount->getAmount()/$amount->getAmount();
         } else {
-            $rate = $amount->getSum()/$sum->getSum();
+            $rate = $amount->getAmount()/$amount->getAmount();
         }
 
         return $rate;
@@ -117,26 +116,26 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $result;
     }
 
-    public function getDirection(Currency $currency1, Currency $currency2) : string
+    public function getDirection(Coin $coin1, Coin $coin2) : string
     {
-        $market = CurrencyHelper::getMarketName($this->getMarkets(), $currency1, $currency2);
+        $market = CoinHelper::getMarketName($this->getMarkets(), $coin1, $coin2);
         $marketFirstCur = current(explode('-', $market));
 
-        if($marketFirstCur != $currency1->code) return 'bids';
+        if($marketFirstCur != $coin1->code) return 'bids';
         else return 'asks';
     }
 
-    public function getEstimateAmount(Sum $sum, Currency $currency2) : Order
+    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
     {
-        $min = config('app.minimums')[$this->getId()][$sum->getCurrency()->getCode()];
-        $max = config('app.maximums')[$this->getId()][$sum->getCurrency()->getCode()];
-                
-        if($min > $sum->getSum() | $max < $sum->getSum()) {
-            throw new \coinmonkey\exceptions\ErrorException("Minimum is $min " . $sum->getCurrency()->getCode() . " and maximum is $max " . $sum->getCurrency()->getCode());
+        $min = config('app.minimums')[$this->getId()][$amount->getCoin()->getCode()];
+        $max = config('app.maximums')[$this->getId()][$amount->getCoin()->getCode()];
+
+        if($min > $amount->getAmount() | $max < $amount->getAmount()) {
+            throw new \coinmonkey\exceptions\ErrorException("Minimum is $min " . $amount->getCoin()->getCode() . " and maximum is $max " . $amount->getCoin()->getCode());
         }
 
-        $market = CurrencyHelper::getMarketName($this->getMarkets(), $sum->getCurrency(), $currency2);
-        $direction = $this->getDirection($sum->getCurrency(), $currency2);
+        $market = CoinHelper::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
+        $direction = $this->getDirection($amount->getCoin(), $coin2);
         $rounding = PHP_ROUND_HALF_UP;
 
         $orderBook = $this->getOrderBook($market);
@@ -145,11 +144,9 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
             throw new \coinmonkey\exceptions\ErrorException('Can not find ' . $market . ' on Bittrex');
         }
 
-        $left = $sum->getSum();
+        $left = $amount->getAmount();
 
         $type = ($direction == 'asks') ? 'buy' : 'sell';
-
-        $operations = [];
 
         $costs = [];
 
@@ -163,39 +160,35 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
             //Не покрывает полностью
             if($boost <= $left) {
                 if($direction == 'bids') {
-                    $sumClear = $offer['amount'] * $offer['price'];
+                    $amountClear = $offer['amount'] * $offer['price'];
                 } else {
-                    $sumClear = $offer['amount'];
+                    $amountClear = $offer['amount'];
                 }
 
-                $sum = round($sumClear - ($sumClear * $offer['fees']['take']), 8, $rounding);
+                $amount = round($amountClear - ($amountClear * $offer['fees']['take']), 8, $rounding);
 
-                $costs[$key] = $sum;
+                $costs[$key] = $amount;
 
                 if($type == 'sell') {
-                    $sumClear = $sumClear*(1/$offer['price']);
+                    $amountClear = $amountClear*(1/$offer['price']);
                 }
-
-                $operations[] = new Operation($offer['exchanger'], $market, $type, round($sumClear, 8, $rounding), $offer['price']);
 
                 $left = $left-$boost;
             } else {
 
                 if($direction == 'bids') {
-                    $sumClear = $left * $offer['price'];
+                    $amountClear = $left * $offer['price'];
                 } else {
-                    $sumClear = $left * (1/$offer['price']);
+                    $amountClear = $left * (1/$offer['price']);
                 }
 
-                $sum = round($sumClear - ($sumClear * $offer['fees']['take']), 8, $rounding);
+                $amount = round($amountClear - ($amountClear * $offer['fees']['take']), 8, $rounding);
 
-                $costs[$key] = $sum;
+                $costs[$key] = $amount;
 
                 if($type == 'sell') {
-                    $sumClear = $sumClear*(1/$offer['price']);
+                    $amountClear = $amountClear*(1/$offer['price']);
                 }
-
-                $operations[] = new Operation($offer['exchanger'], $market, $type, round($sumClear, 8, $rounding), $offer['price']);
 
                 $left = 0;
 
@@ -211,19 +204,19 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
             throw new \coinmonkey\exceptions\ErrorException('The market ' . $market . ' can not give $left</span>');
         }
 
-        $sum = array_sum($costs);
+        $amount = array_Amount($costs);
 
-        return new Order(round($sum, 8, $rounding), $currency2, $operations);
+        return new Order(round($amount, 8, $rounding), $coin2);
     }
 
-    public function buy(string $market, $sum, $rate)
+    public function buy(string $market, $amount, $rate)
     {
-        return $this->tool->buy($market, round($sum, 8), round($rate, 8));
+        return $this->tool->buy($market, round($amount, 8), round($rate, 8));
     }
 
-    public function sell(string $market, $sum, $rate)
+    public function sell(string $market, $amount, $rate)
     {
-        return $this->tool->sell($market, round($sum, 8), round($rate, 8));
+        return $this->tool->sell($market, round($amount, 8), round($rate, 8));
     }
 
     public function getOrderBook(string $market)
@@ -260,7 +253,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return true;
     }
 
-    public function isMakeBroken($orderId, $sum, $market = '') : bool
+    public function isMakeBroken($orderId, $amount, $market = '') : bool
     {
         if(!$orderId) {
             return false;
@@ -272,7 +265,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
             return false;
         }
 
-        return ($order['sum_remaining'] != $sum);
+        return ($order['Amount_remaining'] != $amount);
     }
 
     public function getBestMake(string $market, $rate, string $direction)

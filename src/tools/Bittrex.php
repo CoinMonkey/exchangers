@@ -16,9 +16,9 @@ class Bittrex {
         $this->cache = $cache;
     }
 
-    public function checkWithdraw($currency, $address, $amount, $time)
+    public function checkWithdraw($coin, $address, $amount, $time)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&currency=' . $currency . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -35,11 +35,11 @@ class Bittrex {
 
         foreach($result->result as $withdraw) {
             $tdiff = time()-strtotime($withdraw->Opened);
-            if($address == $withdraw->Address && $withdraw->Amount == $amount && $tdiff < $time) {
+            if($address == $withdraw->Address && $withdraw->amount == $amount && $tdiff < $time) {
                 return [
                     'id' => $withdraw->PaymentUuid,
                     'txId' => $withdraw->TxId,
-                    'amount' => $withdraw->Amount,
+                    'amount' => $withdraw->amount,
                     'confirmations' => null,
                 ];
             }
@@ -48,9 +48,9 @@ class Bittrex {
         return false;
     }
     
-    public function checkWithdrawById($id, $currency)
+    public function checkWithdrawById($id, $coin)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&currency=' . $currency . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -70,7 +70,7 @@ class Bittrex {
                 return [
                     'id' => $withdraw->PaymentUuid,
                     'txId' => $withdraw->TxId,
-                    'amount' => $withdraw->Amount,
+                    'amount' => $withdraw->amount,
                 ];
             }
         }
@@ -78,9 +78,9 @@ class Bittrex {
         return false;
     }
     
-    public function checkDeposit($currency, $amount, $time)
+    public function checkDeposit($coin, $amount, $time)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getdeposithistory?apikey=' . $this->key . '&currency=' . $currency . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getdeposithistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -98,12 +98,12 @@ class Bittrex {
         foreach($result->result as $deposit) {
             $tdiff = time()-strtotime($deposit->LastUpdated);
 
-            if($deposit->Amount == $amount && $tdiff < $time) {
+            if($deposit->amount == $amount && $tdiff < $time) {
                 return [
                     'id' => $deposit->Id,
                     'confirmations' => $deposit->Confirmations,
                     'txId' => $deposit->TxId,
-                    'amount' => $deposit->Amount,
+                    'amount' => $deposit->amount,
                 ];
             }
         }
@@ -111,7 +111,7 @@ class Bittrex {
         return false;
     }
     
-    public function getMinConfirmations($currency)
+    public function getMinConfirmations($coin)
     {
         $uri = 'https://bittrex.com/api/v1.1/public/getcurrencies?apikey=' . $this->key . '&nonce=' . time();
 
@@ -126,20 +126,20 @@ class Bittrex {
 
         $currencies = [];
 
-        foreach($obj->result as $currency) {
-            $currencies[$currency->Currency] = $currency->MinConfirmation;
+        foreach($obj->result as $coin) {
+            $currencies[$coin->coin] = $coin->MinConfirmation;
         }
 
-        if(!isset($currencies[$currency])) {
+        if(!isset($currencies[$coin])) {
             return null;
         }
         
-        return (int) $currencies[$currency];
+        return (int) $currencies[$coin];
     }
     
-    public function getDepositAddress(string $currency)
+    public function getDepositAddress(string $coin)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getdepositaddress?apikey=' . $this->key . '&currency=' . $currency . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getdepositaddress?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -162,9 +162,9 @@ class Bittrex {
         ];
     }
 
-    public function withdraw(string $address, $amount, $currency)
+    public function withdraw(string $address, $amount, $coin)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/withdraw?apikey=' . $this->key . '&quantity=' . $amount . '&address=' . $address . '&currency=' . $currency . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/withdraw?apikey=' . $this->key . '&quantity=' . $amount . '&address=' . $address . '&Coin=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -176,7 +176,7 @@ class Bittrex {
         $result = json_decode($execResult);
 
         if(!$result->success) {
-            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't make a withdraw to $address $amount of $currency ");
+            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't make a withdraw to $address $amount of $coin ");
         }
 
         return $result->result->uuid;
@@ -271,8 +271,8 @@ class Bittrex {
             'deal' => ($order->Type == 'LIMIT_BUY') ? 'buy' : 'sell',
             'rate' => $order->Limit,
             'price' => $price,
-            'sum' => $order->Quantity,
-            'sum_remaining' => $order->QuantityRemaining,
+            'Amount' => $order->Quantity,
+            'Amount_remaining' => $order->QuantityRemaining,
         ];
     }
 
@@ -298,10 +298,10 @@ class Bittrex {
         return $markets;
     }
 
-    public function buy($market, $sum, $rate)
+    public function buy($market, $amount, $rate)
     {
         //return true;
-        $uri = 'https://bittrex.com/api/v1.1/market/buylimit?apikey=' . $this->key . '&market=' . $market . '&quantity=' . $sum . '&rate=' . $rate . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/market/buylimit?apikey=' . $this->key . '&market=' . $market . '&quantity=' . $amount . '&rate=' . $rate . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -315,16 +315,16 @@ class Bittrex {
         $result = ($obj->success == true);
 
         if(!$result) {
-            throw new \coinmonkey\exceptions\ErrorException("bittrex buy $market, $sum, $rate ", json_encode($obj));
+            throw new \coinmonkey\exceptions\ErrorException("bittrex buy $market, $amount, $rate ", json_encode($obj));
         }
 
         return $obj->result->uuid;
     }
 
-    public function sell($market, $sum, $rate)
+    public function sell($market, $amount, $rate)
     {
         //return true;
-        $uri = 'https://bittrex.com/api/v1.1/market/selllimit?apikey=' . $this->key . '&market=' . $market . '&quantity=' . $sum . '&rate=' . $rate . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/market/selllimit?apikey=' . $this->key . '&market=' . $market . '&quantity=' . $amount . '&rate=' . $rate . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -338,7 +338,7 @@ class Bittrex {
         $result = ($obj->success == true);
 
         if(!$result) {
-            throw new \coinmonkey\exceptions\ErrorException("bittrex sell $market, $sum, $rate", json_encode($obj));
+            throw new \coinmonkey\exceptions\ErrorException("bittrex sell $market, $amount, $rate", json_encode($obj));
         }
 
         return $obj->result->uuid;
@@ -383,8 +383,8 @@ class Bittrex {
                 'time' => strtotime($order->Opened),
                 'deal' => ($order->OrderType == 'LIMIT_BUY') ? 'buy' : 'sell',
                 'rate' => $order->Price,
-                'sum' => $order->Quantity,
-                'sum_remaining' => $order->QuantityRemaining,
+                'Amount' => $order->Quantity,
+                'Amount_remaining' => $order->QuantityRemaining,
             ];
         }
 
@@ -414,7 +414,7 @@ class Bittrex {
                 'time' => strtotime($order->Opened),
                 'deal' => ($order->OrderType == 'LIMIT_BUY') ? 'buy' : 'sell',
                 'rate' => $order->Price,
-                'sum' => $order->Quantity
+                'Amount' => $order->Quantity
             ];
         }
 
@@ -469,7 +469,7 @@ class Bittrex {
         $return = [];
 
         foreach($result as $balance) {
-            $return[$balance->Currency] = $balance->Balance;
+            $return[$balance->coin] = $balance->Balance;
         }
 
         return $return;

@@ -74,6 +74,14 @@ class Poloniex {
         return $json;
     }
 
+    public function get_currencies() {
+        return $this->query(
+            array(
+                'command' => 'returnCurrencies'
+            )
+        );
+    }
+
     public function get_balances() {
         return $this->query(
             array(
@@ -86,7 +94,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'returnOpenOrders',
-                'currencyPair' => strtoupper($pair)
+                'CoinPair' => strtoupper($pair)
             )
         );
     }
@@ -95,7 +103,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'returnTradeHistory',
-                'currencyPair' => strtoupper($pair)
+                'CoinPair' => strtoupper($pair)
             )
         );
     }
@@ -104,7 +112,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'buy',
-                'currencyPair' => strtoupper($pair),
+                'CoinPair' => strtoupper($pair),
                 'rate' => $rate,
                 'amount' => $amount
             )
@@ -115,7 +123,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'sell',
-                'currencyPair' => strtoupper($pair),
+                'CoinPair' => strtoupper($pair),
                 'rate' => $rate,
                 'amount' => $amount
             )
@@ -126,17 +134,17 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'cancelOrder',
-                'currencyPair' => strtoupper($pair),
+                'CoinPair' => strtoupper($pair),
                 'orderNumber' => $order_number
             )
         );
     }
 
-    public function withdraw($currency, $amount, $address) {
+    public function withdraw($coin, $amount, $address) {
         return $this->query(
             array(
                 'command' => 'withdraw',
-                'currency' => strtoupper($currency),
+                'Coin' => strtoupper($coin),
                 'amount' => $amount,
                 'address' => $address
             )
@@ -144,17 +152,17 @@ class Poloniex {
     }
 
     public function get_trade_history($pair) {
-        $trades = $this->retrieveJSON($this->public_url.'?command=returnTradeHistory&currencyPair='.strtoupper($pair));
+        $trades = $this->retrieveJSON($this->public_url.'?command=returnTradeHistory&CoinPair='.strtoupper($pair));
         return $trades;
     }
 
     public function get_order_book($pair) {
-        $orders = $this->retrieveJSON($this->public_url.'?command=returnOrderBook&currencyPair='.strtoupper($pair));
+        $orders = $this->retrieveJSON($this->public_url.'?command=returnOrderBook&CoinPair='.strtoupper($pair));
         return $orders;
     }
 
     //returnDepositAddresses
-    public function get_deposit_address(string $currency)
+    public function get_deposit_address(string $coin)
     {
         $return = $this->query(
             array(
@@ -162,9 +170,9 @@ class Poloniex {
             )
         );
 
-        return $return[$currency];
+        return $return[$coin];
     }
-    
+
     public function get_deposit_withdraw_history($time)
     {
         $return = $this->query(
@@ -177,7 +185,7 @@ class Poloniex {
 
         return $return;
     }
-    
+
     public function get_volume() {
         $volume = $this->retrieveJSON($this->public_url.'?command=return24hVolume');
         return $volume;

@@ -18,7 +18,6 @@
     "require": {
         "php": ">=7.1.0",
         "achse/php-shapeshift-io-api": "*",
-        "pepijnolivier/laravel-yobit": "*",
         "coinmonkey/exchange-interfaces": "*",
         "coinmonkey/exchange-exceptions": "*",
         "coinmonkey/exchange-entities": "*"

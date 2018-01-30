@@ -4,10 +4,10 @@ namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\entities\Order;
-use coinmonkey\entities\Sum;
+use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use \Achse\ShapeShiftIo\Client;
-use coinmonkey\entities\Currency;
+use coinmonkey\entities\Coin;
 use coinmonkey\entities\Order as OrderExchange;
 
 class ShapeShift implements InstantExchangerInterface
@@ -16,6 +16,8 @@ class ShapeShift implements InstantExchangerInterface
     private $secret = '';
     private $tool;
     private $cache;
+
+    CONST STRIND_ID = 'shapeshift';
 
     public function __construct($key, $secret, $cache = true)
     {
@@ -27,61 +29,50 @@ class ShapeShift implements InstantExchangerInterface
 
     public function getId() : string
     {
-        return 'shapeshift';
+        return self::STRIND_ID;
     }
 
-    public function getStatus(OrderExchange $order) : Status
+    public function getExchangeStatus(OrderExchange $order) : ?integer
     {
-        $wallet = $order->getWallet()->first();
-        $return = $this->tool->getStatusOfDepositToAddress($wallet->address);
+        $address = $order->getAddress();
+        $return = $this->tool->getStatusOfDepositToAddress($address->getExchangerOrderId());
 
         $ourStatus = null;
         $shapeStatus = $return->status;
 
         switch($shapeStatus) {
             case 'no_deposits': $ourStatus = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
-            case 'received': $ourStatus = OrderExchange::STATUS_WAIT_PARTNER_TRANSACTION; break;
+            case 'received': $ourStatus = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
             case 'complete': $ourStatus = OrderExchange::STATUS_DONE; break;
             default: $ourStatus = OrderExchange::STATUS_FAIL; break;
         }
 
-        if($order->status != $ourStatus) {
-            $order->writeLog($ourStatus);
-
-            if(isset($return->transaction)) {
-                if($transaction = $order->getTransaction($order->currency2)) {
-                    $transaction->hash = $return->transaction;
-                    $transaction->save();
-                }
-            }
-        }
-
         return (new Status($ourStatus, (isset($return->transaction)) ? $return->transaction : null));
     }
-    
-    public function getEstimateAmount(Sum $sum, Currency $currency2) : Order
-    {
-        $rate = $this->getRates($sum->getCurrency()->code . '-' . $currency2->code);
 
-        if($sum->getSum() > $rate['maximum'] | $sum->getSum() < $rate['minimum']) {
-            throw new \coinmonkey\exceptions\ErrorException('Minimum is ' . $rate['minimum'] . ' ' . $sum->getCurrency()->getCode() . ' and maximum is ' . $rate['maximum'] . ' ' . $sum->getCurrency()->getCode());
+    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
+    {
+        $rate = $this->getRates($amount->getCoin()->code . '-' . $coin2->code);
+
+        if($amount->getGivenAmount() > $rate['maximum'] | $amount->getGivenAmount() < $rate['minimum']) {
+            throw new \coinmonkey\exceptions\ErrorException('Minimum is ' . $rate['minimum'] . ' ' . $amount->getCoin()->getCode() . ' and maximum is ' . $rate['maximum'] . ' ' . $amount->getCoin()->getCode());
         }
 
         if($rate['last'] > 0) {
-            $cost = $sum->getSum()*$rate['last'];
+            $cost = $amount->getGivenAmount()*$rate['last'];
         } else {
-            $cost = $sum->getSum()*(1/$rate['last']);
+            $cost = $amount->getGivenAmount()*(1/$rate['last']);
         }
 
         $cost = $cost-$rate['minerFee'];
 
-        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $currency2);
+        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
     }
 
-    public function makeDepositAddress(string $clientAddress, Sum $sum, Currency $currency2) : array
+    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
     {
         try {
-            $transaction = $this->tool->createTransaction($clientAddress, $sum->getCurrency()->getCode(), $currency2->getCode(), null, null, null, $this->key);
+            $transaction = $this->tool->createTransaction($clientAddress, $amount->getCoin()->getCode(), $coin2->getCode(), null, null, null, $this->key);
         } catch(\Exception $e) {
             throw new \coinmonkey\exceptions\ErrorException($e->getMessage(), 'Shapeshift makeDepositAddress error');
         }

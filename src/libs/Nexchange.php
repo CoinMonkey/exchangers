@@ -4,109 +4,88 @@ namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\entities\Order;
-use coinmonkey\entities\Sum;
-use coinmonkey\entities\Currency;
+use coinmonkey\entities\Amount;
+use coinmonkey\entities\Coin;
 use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Status;
+use coinmonkey\exchangers\tools\Nexchange;
 
 class Nexchange implements InstantExchangerInterface
 {
-    private $key = '';
-    private $secret = '';
+    private $referral = '';
     private $tool;
     private $cache;
 
+    const STRING_ID = 'nexchange';
+
+    public function __construct($referral, $cache = true)
+    {
+        $this->referral = $referral;
+        $this->cache = $cache;
+        $this->tool = new Nexchange($referral);
+    }
+
     public function getId() : string
     {
-        return 'nexchange';
+        return self::STRIND_ID;
     }
 
-    public function __construct($key, $secret, $cache = true)
-    {
-        $this->key = $key;
-        $this->secret = $secret;
-        $this->cache = $cache;
-    }
-
-    public function getBalances()
-    {
-        return [
-            'BTC' => 999999999999,
-            'LTC' => 999999999999,
-            'ETH' => 999999999999,
-        ];
-    }
-    
-    public function withdraw(string $address, Sum $sum)
+    public function withdraw(string $address, Amount $amount)
     {
         return null;
     }
 
-    public function getStatus(OrderExchange $order) : Status
+    public function getExchangeStatus(OrderExchange $order) : ?integer
     {
-        $wallet = $order->getWallet()->first();
-        $return = $this->tool->request('getStatus', ['id' => $wallet->external_id]);
+        $address = $order->getAddress();
+
+        $nxOrder = $this->tool->getOrder($address->getExchangerOrderId());
+
+        $status = $nxOrder->status_name[0][0];
 
         $ourStatus = null;
-        $shapeStatus = $return;
 
-        switch($shapeStatus) {
-            case 'waiting': $ourStatus = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
-            case 'confirming': $ourStatus = OrderExchange::STATUS_YOU_DID_TRANSACTION; break;
-            case 'exchanging': $ourStatus = OrderExchange::STATUS_PARTNER_PROCESSING; break;
-            case 'sending': $ourStatus = OrderExchange::STATUS_WAIT_PARTNER_TRANSACTION; break;
-            case 'finished': $ourStatus = OrderExchange::STATUS_DONE; break;
-            default: $ourStatus = OrderExchange::STATUS_FAIL; break;
+        switch($status) {
+            case '11': $ourStatus = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
+            case '12': $ourStatus = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
+            case '13': $ourStatus = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
+            case '15': $ourStatus = OrderExchange::STATUS_DONE; break;
+            default: $ourStatus = OrderExchange::STATUS_DONE; break;
         }
 
-        if($order->status != $ourStatus) {
-            $order->writeLog($ourStatus);
-        }
-
-        if($transaction = $order->getTransaction($order->currency2)) {
-            $info = $this->tool->request('getTransactions', ['address' => $wallet->address, "limit" => 10, "offset" => 0]);
-
-            if($info) {
-                foreach($info as $tx) {
-                    $transaction->hash = $tx->payoutHash;
-                    $transaction->save();
-                    break;
-                }
-            }
-        }
-
-        return (new Status($ourStatus, (isset($return->transaction)) ? $return->transaction : null));
+        return (new Status($ourStatus, (isset($return->batch_out)) ? $return->batch_out : null));
     }
 
-    public function getMinimum(Sum $sum, Currency $currency2)
+    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
     {
-        $min = $this->tool->request('getMinAmount', ['from' => $sum->getCurrency()->getCode(), 'to' => $currency2->getCode()]);
+        $minimum = $this->tool->getMinimum($amount->getCoin()->getCode());
+        $maximum = $this->tool->getMaximum($coin2->getCode());
 
-        return $min;
-    }
-
-    public function getEstimateAmount(Sum $sum, Currency $currency2) : Order
-    {
-        $minimum = $this->getMinimum( $sum, $currency2);
-
-        if($sum->getSum() < $minimum) {
-            throw new \coinmonkey\exceptions\ErrorException('Changelly minimum is ' . $minimum);
+        if($amount->getGivenAmount() > $maximum | $amount->getGivenAmount() < $minimum) {
+            throw new \App\Exceptions\ErrorException('Minimum is ' . $minimum . ' ' . $amount->getCoin()->getCode() . ' and maximum is ' . $maximum . ' ' . $amount->getCoin()->getCode(), null, null, 0);
         }
 
-        $cost = $this->tool->request('getExchangeAmount', ['from' => $sum->getCurrency()->getCode(), 'to' => $currency2->getCode(), 'amount' => $sum->getSum()]);
+        $cost = $this->tool->getPrice($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getGivenAmount());
 
-        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $currency2);
+        $cost = $cost-$this->tool->getWithdrawalFee($coin2->getCode());
+
+        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
     }
 
-    public function makeDepositAddress(string $clientAddress, Sum $sum, Currency $currency2) : array
+    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
     {
-        $res = $this->tool->request('createTransaction', ['amount' => $sum->getSum(), 'from' => $sum->getCurrency()->getCode(), 'to' => $currency2->getCode(), 'address' => $clientAddress]);
+        $res = $this->tool->createAnonymousOrder($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getGivenAmount(), $clientAddress);
 
         return [
             'private' => null,
             'public' => null,
-            'address' => $res->payinAddress,
-            'id' => $res->id,
+            'address' => $res->deposit_address->address,
+            'id' => $res->unique_reference,
         ];
+    }
+
+    public function getMinConfirmations(Coin $coin)
+    {
+        return $this->tool->getMinConfirmations($coin->getCode());
     }
 }
