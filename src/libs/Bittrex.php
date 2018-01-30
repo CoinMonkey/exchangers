@@ -6,13 +6,10 @@ use coinmonkey\interfaces\ExchangerInterface;
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\exchangers\tools\Bittrex as BittrexTool;
 use coinmonkey\helpers\ExchangerHelper;
-use coinmonkey\helpers\CoinHelper;
 use coinmonkey\entities\Order;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Coin;
-use Illuminate\Support\Facades\Cache;
 use coinmonkey\entities\Order as OrderExchange;
-use coinmonkey\entities\Status;
 use coinmonkey\helpers\TraiderHelper;
 
 class Bittrex implements ExchangerInterface, InstantExchangerInterface
@@ -80,7 +77,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
 
     public function exchange(Amount $amount, Coin $coin2)
     {
-        $market = CoinHelper::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
+        $market = self::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
         $direction = $this->getDirection($amount->getCoin(), $coin2);
 
         $rate = $this->getRate($amount, $coin2);
@@ -118,7 +115,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
 
     public function getDirection(Coin $coin1, Coin $coin2) : string
     {
-        $market = CoinHelper::getMarketName($this->getMarkets(), $coin1, $coin2);
+        $market = self::getMarketName($this->getMarkets(), $coin1, $coin2);
         $marketFirstCur = current(explode('-', $market));
 
         if($marketFirstCur != $coin1->code) return 'bids';
@@ -134,7 +131,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
             throw new \coinmonkey\exceptions\ErrorException("Minimum is $min " . $amount->getCoin()->getCode() . " and maximum is $max " . $amount->getCoin()->getCode());
         }
 
-        $market = CoinHelper::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
+        $market = self::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
         $direction = $this->getDirection($amount->getCoin(), $coin2);
         $rounding = PHP_ROUND_HALF_UP;
 
@@ -221,13 +218,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
 
     public function getOrderBook(string $market)
     {
-        if($this->cache) {
-            return Cache::remember('bittrex_orderbook_' . $market, env('ORDERBOOK_CACHE_TIME'), function () use ($market) {
-                return ExchangerHelper::compileOrderBook($this, $this->tool->getOrderBook($market));
-            });
-        }
-
-        return ExchangerHelper::compileOrderBook($this, $this->tool->getOrderBook($market));
+        return $this->compileOrderBook($this->tool->getOrderBook($market));
     }
 
     public function getBalances() : array
@@ -311,5 +302,33 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         $history = $this->tool->getMyActiveOrders();
 
         return isset($history[$orderId]);
+    }
+
+    private static function getMarketName($markets, Coin $coin1, Coin $coin2)
+    {
+        $var1 = $coin1->getCode() . '-' . $coin2->getCode();
+        $var2 = $coin2->getCode() . '-' . $coin1->getCode();
+
+        return in_array($var1, $markets) ? $var1 : $var2;
+    }
+
+    private function compileOrderBook($orderBook)
+    {
+        if(!isset($orderBook['bids']) | !isset($orderBook['asks'])) {
+            return [
+                'asks' => [],
+                'bids' => [],
+            ];
+        }
+
+        foreach($orderBook['bids'] as &$offer) {
+            $offer['exchanger'] = $this;
+        }
+
+        foreach($orderBook['asks'] as &$offer) {
+            $offer['exchanger'] = $this;
+        }
+
+        return $orderBook;
     }
 }

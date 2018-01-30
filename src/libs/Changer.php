@@ -9,7 +9,6 @@ use coinmonkey\entities\Coin;
 use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\exchangers\tools\Changer as ChangerTool;
 use coinmonkey\exchangers\tools\ChangerAuth;
-use coinmonkey\entities\Status;
 
 class Changer implements InstantExchangerInterface
 {
@@ -40,17 +39,14 @@ class Changer implements InstantExchangerInterface
         $address = $order->getAddress();
         $return = $this->tool->checkExchange($address->getExchangerOrderId());
 
-        $ourStatus = null;
-        $status = $return->status;
-
-        switch($status) {
-            case 'new': $ourStatus = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
-            case 'processing': $ourStatus = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-            case 'processed': $ourStatus = OrderExchange::STATUS_DONE; break;
-            default: $ourStatus = OrderExchange::STATUS_FAIL; break;
+        switch($return->status) {
+            case 'new': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
+            case 'processing': return OrderExchange::STATUS_EXCHANGER_PROCESSING;
+            case 'processed': return OrderExchange::STATUS_DONE;
+            default: return OrderExchange::STATUS_FAIL;
         }
 
-        return (new Status($ourStatus, (isset($return->batch_out)) ? $return->batch_out : null));
+        return null;
     }
 
     public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
@@ -92,7 +88,8 @@ class Changer implements InstantExchangerInterface
         ];
     }
 
-    private function getCoinName($code) {
+    private function getCoinName($code)
+    {
         $data = [
             'BTC' => 'bitcoin_BTC',
             'ETH' => 'ethereum_ETH',

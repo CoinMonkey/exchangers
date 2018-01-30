@@ -7,7 +7,6 @@ use coinmonkey\entities\Order;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Coin;
 use coinmonkey\entities\Order as OrderExchange;
-use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Nexchange;
 
 class Nexchange implements InstantExchangerInterface
@@ -41,19 +40,15 @@ class Nexchange implements InstantExchangerInterface
 
         $nxOrder = $this->tool->getOrder($address->getExchangerOrderId());
 
-        $status = $nxOrder->status_name[0][0];
-
-        $ourStatus = null;
-
-        switch($status) {
-            case '11': $ourStatus = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
-            case '12': $ourStatus = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
-            case '13': $ourStatus = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-            case '15': $ourStatus = OrderExchange::STATUS_DONE; break;
-            default: $ourStatus = OrderExchange::STATUS_DONE; break;
+        switch($nxOrder->status_name[0][0]) {
+            case '11': return OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION;
+            case '12': return OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING;
+            case '13': return OrderExchange::STATUS_EXCHANGER_PROCESSING;
+            case '15': return OrderExchange::STATUS_DONE;
+            default: return OrderExchange::STATUS_DONE;
         }
 
-        return (new Status($ourStatus, (isset($return->batch_out)) ? $return->batch_out : null));
+        return null;
     }
 
     public function getEstimateAmount(Amount $amount, Coin $coin2) : Order

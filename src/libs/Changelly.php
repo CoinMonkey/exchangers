@@ -35,37 +35,18 @@ class Changelly implements InstantExchangerInterface
     public function getExchangeStatus(OrderExchange $order) : ?integer
     {
         $address = $order->getAddress();
-        $return = $this->tool->request('getStatus', ['id' => $address->getExchangerOrderId()]);
+        $status = $this->tool->request('getStatus', ['id' => $address->getExchangerOrderId()]);
 
-        $ourStatus = null;
-        $shapeStatus = $return;
-
-        switch($shapeStatus) {
-            case 'waiting': $ourStatus = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
-            case 'confirming': $ourStatus = OrderExchange::STATUS_YOU_DID_TRANSACTION; break;
-            case 'exchanging': $ourStatus = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-            case 'sending': $ourStatus = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
-            case 'finished': $ourStatus = OrderExchange::STATUS_DONE; break;
-            default: $ourStatus = OrderExchange::STATUS_FAIL; break;
+        switch($status) {
+            case 'waiting': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
+            case 'confirming': return OrderExchange::STATUS_YOU_DID_TRANSACTION;
+            case 'exchanging': return OrderExchange::STATUS_EXCHANGER_PROCESSING;
+            case 'sending': return OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION;
+            case 'finished': return OrderExchange::STATUS_DONE;
+            default: return OrderExchange::STATUS_FAIL;
         }
 
-        if($order->status != $ourStatus) {
-            $order->writeLog($ourStatus);
-        }
-
-        if($transaction = $order->getTransaction($order->coin2)) {
-            $info = $this->tool->request('getTransactions', ['address' => $address->getExchangerOrderId(), "limit" => 10, "offset" => 0]);
-
-            if($info) {
-                foreach($info as $tx) {
-                    $transaction->hash = $tx->payoutHash;
-                    $transaction->save();
-                    break;
-                }
-            }
-        }
-
-        return (new Status($ourStatus, (isset($return->transaction)) ? $return->transaction : null));
+        return null;
     }
 
     public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
