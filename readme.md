@@ -77,7 +77,7 @@ $coin1 = new Coin('ETH', 'Ether'); //This coin we want to exchange...
 $coin2 = new Coin('BTC', 'Bitcoin'); //To this coin
 $amount = new Amount(1.3, $coin1); //Creating 1.3 amount of $coin1 for exchanging
 
-//Working with instant exchangers (classic exchangers can work in this mode to)
+//Working with instant exchangers (classic exchangers can work in this mode too)
 foreach($instantExchangers as $exchangerName) {
     //Creating exchanger instance by name
     $exchanger = $fabric->buildInstant($exchangerName);
@@ -95,6 +95,6 @@ foreach($exchangers as $exchangerName) {
     echo " - withdrawal fee " .  $exchanger->getWithdrawalFee($coin2) . "\n";
     echo " - min coinfirmations " .  $exchanger->getMinConfirmations($coin1) . "\n";
     //If it's OK you can call $order = $exchanger->makeDepositAddress('1JBPkwCuTpwcyEbhBkAKdTfU9K1zRLX5Ym', $amount, $coin2)
-    //In this case we should make CRON checker of deposit status and make exchange "manualy" + withdrawal (example will be later)
+    //In this case we should make CRON checker of deposit status and make exchange and withdrawal "manualy" (example will be later)
 }
 ```
