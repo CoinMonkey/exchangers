@@ -1,4 +1,4 @@
-# PHP libraries for popular crypto-exchangers
+# PHP libraries for a popular crypto-exchangers
 
 This libraries working for a finding best rates and make exchanges via singe polymorfing fabric.
 
