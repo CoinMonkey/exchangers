@@ -39,7 +39,7 @@ The following methods are available for Poloniex and Bittrex (Bitfinex comin soo
 composer require coinmonkey/exchangers-api @dev
 ```
 
-Please note that libraries are in in development. Don't use it in procution projects.
+Please note that libraries are in in development. Don't use it in prodution projects.
 
 Production version coming soon (but I'm not sure).
 
