@@ -3,17 +3,40 @@
 namespace coinmonkey\exchangers;
 
 use coinmonkey\interfaces\ExchangerFabricInterface;
+use coinmonkey\interfaces\InstantExchangerInterface;
+use coinmonkey\interfaces\ExchangerInterface;
 
 class ExchangerFabric implements ExchangerFabricInterface
 {
-    public function build($name)
+    private $config = [];
+
+    public function __construct($config)
     {
-        switch($name) {
-            case 'changer': return new libs\Changer(env('CHANGER_API_NAME'), env('CHANGER_API_KEY'), env('CHANGER_API_SECURE'), $cache);
-            case 'changelly': return new libs\Changelly(env('CHANGELLY_API_KEY'), env('CHANGELLY_API_SECRET'), $cache);
-            case 'shapeshift': return new libs\ShapeShift(env('SHAPESHIFT_API_KEY'), env('SHAPESHIFT_API_SECRET'), $cache);
-            case 'poloniex': return new libs\Poloniex(env('POLONIEX_API_KEY'), env('POLONIEX_API_SECRET'), $cache);
-            case 'bittrex': return new libs\Bittrex(env('BITTREX_API_KEY'), env('BITTREX_API_SECRET'), $cache);
+        $this->config = $config;
+    }
+
+    public function buildInstant($exchangerName, $cache = true) :  InstantExchangerInterface
+    {
+        switch($exchangerName) {
+            case 'changer': return new libs\Changer($this->getConfig('CHANGER_API_NAME'), $this->getConfig('CHANGER_API_KEY'), $this->getConfig('CHANGER_API_SECURE'), $cache);
+            case 'nexchange': return new libs\Nexchange($this->getConfig('CHANGER_API_NAME'), $this->getConfig('CHANGER_API_KEY'), $this->getConfig('CHANGER_API_SECURE'), $cache);
+            case 'changelly': return new libs\Changelly($this->getConfig('CHANGELLY_API_KEY'), $this->getConfig('CHANGELLY_API_SECRET'), $cache);
+            case 'shapeshift': return new libs\ShapeShift($this->getConfig('SHAPESHIFT_API_KEY'), $this->getConfig('SHAPESHIFT_API_SECRET'), $cache);
+            case 'poloniex': return new libs\Poloniex($this->getConfig('POLONIEX_API_KEY'), $this->getConfig('POLONIEX_API_SECRET'), $cache);
+            case 'bittrex': return new libs\Bittrex($this->getConfig('BITTREX_API_KEY'), $this->getConfig('BITTREX_API_SECRET'), $cache);
         }
+    }
+
+    public function build($exchangerName, $cache = true) :  InstantExchangerInterface
+    {
+        switch($exchangerName) {
+            case 'poloniex': return new libs\Poloniex($this->getConfig('POLONIEX_API_KEY'), $this->getConfig('POLONIEX_API_SECRET'), $cache);
+            case 'bittrex': return new libs\Bittrex($this->getConfig('BITTREX_API_KEY'), $this->getConfig('BITTREX_API_SECRET'), $cache);
+        }
+    }
+
+    private function getConfig($key)
+    {
+        return $this->config[$key];
     }
 }

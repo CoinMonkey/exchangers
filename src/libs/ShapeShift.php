@@ -3,11 +3,12 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\entities\Order;
-use coinmonkey\entities\Amount;
+use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\AmountInterface;
 use \Achse\ShapeShiftIo\Client;
-use coinmonkey\entities\Coin;
-use coinmonkey\entities\Order as OrderExchange;
+use coinmonkey\interfaces\CoinInterface;
+use coinmonkey\interfaces\OrderInterface as OrderExchange;
+use coinmonkey\entities\Amount;
 
 class ShapeShift implements InstantExchangerInterface
 {
@@ -15,8 +16,10 @@ class ShapeShift implements InstantExchangerInterface
     private $secret = '';
     private $tool;
     private $cache;
+    private $ratesCache = [];
 
     CONST STRIND_ID = 'shapeshift';
+    const EXCHANGER_TYPE = 'instant';
 
     public function __construct($key, $secret, $cache = true)
     {
@@ -31,7 +34,7 @@ class ShapeShift implements InstantExchangerInterface
         return self::STRIND_ID;
     }
 
-    public function getExchangeStatus(OrderExchange $order) : ?integer
+    public function getExchangeStatus(OrderExchange $order) : ?int
     {
         $address = $order->getAddress();
         $return = $this->tool->getStatusOfDepositToAddress($address->getExchangerOrderId());
@@ -46,26 +49,59 @@ class ShapeShift implements InstantExchangerInterface
         return null;
     }
 
-    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
+    public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface
     {
-        $rate = $this->getRates($amount->getCoin()->code . '-' . $coin2->code);
+        $rate = $this->getRates($amount->getCoin()->getCode() . '-' . $coin2->getCode());
 
-        if($amount->getGivenAmount() > $rate['maximum'] | $amount->getGivenAmount() < $rate['minimum']) {
+        if($amount->getAmount() > $rate['maximum'] | $amount->getAmount() < $rate['minimum']) {
             throw new \coinmonkey\exceptions\ErrorException('Minimum is ' . $rate['minimum'] . ' ' . $amount->getCoin()->getCode() . ' and maximum is ' . $rate['maximum'] . ' ' . $amount->getCoin()->getCode());
         }
 
-        if($rate['last'] > 0) {
-            $cost = $amount->getGivenAmount()*$rate['last'];
+        if($rate['rate'] > 0) {
+            $cost = $amount->getAmount()*$rate['rate'];
         } else {
-            $cost = $amount->getGivenAmount()*(1/$rate['last']);
+            $cost = $amount->getAmount()*(1/$rate['rate']);
         }
 
         $cost = $cost-$rate['minerFee'];
 
-        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
+        return new Amount(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
     }
 
-    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
+    public function getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        $rate = $this->getRates($amount->getCoin()->getCode() . '-' . $coin2->getCode());
+
+        return $rate['minimum'];
+    }
+
+    public function getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        $rate = $this->getRates($amount->getCoin()->getCode() . '-' . $coin2->getCode());
+
+        return $rate['maximum'];
+    }
+
+    public function getRates(string $market)
+    {
+        if($this->cache && isset($this->ratesCache[$market])) {
+            return $this->ratesCache[$market];
+        }
+
+        $currencies = explode('-', $market);
+        $rate = (array) $this->tool->getMarketInfo($currencies[0], $currencies[1]);
+
+        $this->ratesCache[$market] = [
+            'rate' => $rate['rate'],
+            'minimum' => $rate['minimum'],
+            'minerFee' => $rate['minerFee'],
+            'maximum' => $rate['limit'],
+        ];
+
+        return $this->ratesCache[$market];
+    }
+
+    public function makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array
     {
         try {
             $transaction = $this->tool->createTransaction($clientAddress, $amount->getCoin()->getCode(), $coin2->getCode(), null, null, null, $this->key);

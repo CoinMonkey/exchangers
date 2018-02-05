@@ -3,10 +3,11 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\entities\Order;
+use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\AmountInterface;
+use coinmonkey\interfaces\CoinInterface;
+use coinmonkey\interfaces\OrderInterface as OrderExchange;
 use coinmonkey\entities\Amount;
-use coinmonkey\entities\Coin;
-use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\exchangers\tools\Changer as ChangerTool;
 use coinmonkey\exchangers\tools\ChangerAuth;
 
@@ -19,6 +20,7 @@ class Changer implements InstantExchangerInterface
     private $tool;
 
     const STRING_ID = 'changer';
+    const EXCHANGER_TYPE = 'instant';
 
     public function getId() : string
     {
@@ -34,7 +36,7 @@ class Changer implements InstantExchangerInterface
         $this->tool = new ChangerTool(new ChangerAuth($key, $secure));
     }
 
-    public function getExchangeStatus(OrderExchange $order) : ?integer
+    public function getExchangeStatus(OrderExchange $order) : ?int
     {
         $address = $order->getAddress();
         $return = $this->tool->checkExchange($address->getExchangerOrderId());
@@ -49,7 +51,7 @@ class Changer implements InstantExchangerInterface
         return null;
     }
 
-    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
+    public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface
     {
         $give = $this->getCoinName($amount->getCoin()->getCode());
         $get = $this->getCoinName($coin2->getCode());
@@ -58,23 +60,33 @@ class Changer implements InstantExchangerInterface
         }
         $limits = $this->tool->getLimits($give, $get);
 
-        if($amount->getGivenAmount() < $limits->limits->min_amount | $amount->getGivenAmount() > $limits->limits->max_amount) {
+        if($amount->getAmount() < $limits->limits->min_amount | $amount->getAmount() > $limits->limits->max_amount) {
             throw new \coinmonkey\exceptions\ErrorException('Minimum is ' . $limits->limits->min_amount . ' ' . $amount->getCoin()->getCode() . ' and maximum is ' . $limits->limits->max_amount . ' ' . $amount->getCoin()->getCode());
         }
 
         $rate = $this->tool->getRate($give, $get);
 
-        $cost = round($amount->getGivenAmount()*$rate->rate, 8);
+        $cost = round($amount->getAmount()*$rate->rate, 8);
 
-        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
+        return new Amount(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
     }
 
-    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
+    public function getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        return $this->tool->getLimits($coin->getCode(), $coin2->getCode())->min_amount;
+    }
+
+    public function getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        return $this->tool->getLimits($coin->getCode(), $coin2->getCode())->max_amount;
+    }
+
+    public function makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array
     {
         $data = [
             'send' => $this->getCoinName($amount->getCoin()->getCode()),
             'receive' => $this->getCoinName($coin2->getCode()),
-            'amount' => $amount->getGivenAmount(),
+            'amount' => $amount->getAmount(),
             'receiver_id' => $clientAddress,
         ];
 

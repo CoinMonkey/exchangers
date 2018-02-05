@@ -5,12 +5,11 @@ namespace coinmonkey\exchangers\libs;
 use coinmonkey\interfaces\ExchangerInterface;
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\exchangers\tools\Bittrex as BittrexTool;
-use coinmonkey\helpers\ExchangerHelper;
-use coinmonkey\entities\Order;
 use coinmonkey\entities\Amount;
-use coinmonkey\entities\Coin;
-use coinmonkey\entities\Order as OrderExchange;
-use coinmonkey\helpers\TraiderHelper;
+use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\AmountInterface;
+use coinmonkey\interfaces\CoinInterface;
+use coinmonkey\interfaces\OrderInterface as OrderExchange;
 
 class Bittrex implements ExchangerInterface, InstantExchangerInterface
 {
@@ -18,21 +17,21 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
     private $secret = '';
     private $tool;
     private $cache = true;
-    private $timeToCancel = 3600;
 
     const STRING_ID = 'bittrex';
+    const EXCHANGER_TYPE = 'noninstant';
 
-    public function __construct($key, $secret, $timeToCancel = 3600)
+    public function __construct($key, $secret, $cache = true)
     {
         $this->key = $key;
         $this->secret = $secret;
         $this->tool = $this->tool = new BittrexTool($key, $secret, $cache);
-        $this->timeToCancel = $timeToCancel;
+        $this->cache = $cache;
     }
 
     public function getId() : string
     {
-        return self::STRIND_ID;
+        return self::STRING_ID;
     }
 
     public function getTool()
@@ -40,12 +39,12 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $this->tool;
     }
 
-    public function checkDeposit(Amount $amount, int $time)
+    public function checkDeposit(AmountInterface $amount, int $time)
     {
         return $this->tool->checkDeposit($amount->getCoin()->getCode(), $amount->getAmount(), $time);
     }
 
-    public function checkWithdraw(Amount $amount, $address, int $time)
+    public function checkWithdraw(AmountInterface $amount, $address, int $time)
     {
         return $this->tool->checkWithdraw($amount->getCoin()->getCode(), $address, $amount->getAmount(), $time);
     }
@@ -55,27 +54,42 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $this->tool->checkWithdrawById($id, $coin);
     }
 
-    public function getMinConfirmations(Coin $coin)
+    public function getMinConfirmations(CoinInterface $coin) : ?int
     {
         return $this->tool->getMinConfirmations($coin->getCode());
     }
 
-    public function getExchangeStatus(OrderExchange $order) : integer
+    public function getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        return $this->tool->getMinAmount(self::getMarketName($this->getMarkets(), $coin, $coin2));
+    }
+
+    public function getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        return 0;
+    }
+
+    public function getWithdrawalFee(CoinInterface $coin) : ?float
+    {
+        return $this->tool->getWithdrawalFee($coin->getCode());
+    }
+
+    public function getExchangeStatus(OrderExchange $order) : int
     {
         return null;
     }
 
-    public function withdraw(string $address, Amount $amount)
+    public function withdraw(string $address, AmountInterface $amount)
     {
         return $this->tool->withdraw($address, $amount->getAmount(), $amount->getCoin()->getCode());
     }
 
-    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
+    public function makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array
     {
         return $this->tool->getDepositAddress($amount->getCoin()->getCode());
     }
 
-    public function exchange(Amount $amount, Coin $coin2)
+    public function exchange(AmountInterface $amount, CoinInterface $coin2)
     {
         $market = self::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
         $direction = $this->getDirection($amount->getCoin(), $coin2);
@@ -91,7 +105,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $this->getOrder($id);
     }
 
-    public function getRate(Amount $amount, Coin $coin2)
+    public function getRate(AmountInterface $amount, CoinInterface $coin2)
     {
         $amount = $this->getEstimateAmount($amount, $coin2);
 
@@ -113,24 +127,16 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $result;
     }
 
-    public function getDirection(Coin $coin1, Coin $coin2) : string
+    public function getDirection(CoinInterface $coin1, CoinInterface $coin2) : string
     {
         $market = self::getMarketName($this->getMarkets(), $coin1, $coin2);
         $marketFirstCur = current(explode('-', $market));
 
-        if($marketFirstCur != $coin1->code) return 'bids';
-        else return 'asks';
+        return ($marketFirstCur != $coin1->getCode()) ? 'bids' : 'asks';
     }
 
-    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
+    public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface
     {
-        $min = config('app.minimums')[$this->getId()][$amount->getCoin()->getCode()];
-        $max = config('app.maximums')[$this->getId()][$amount->getCoin()->getCode()];
-
-        if($min > $amount->getAmount() | $max < $amount->getAmount()) {
-            throw new \coinmonkey\exceptions\ErrorException("Minimum is $min " . $amount->getCoin()->getCode() . " and maximum is $max " . $amount->getCoin()->getCode());
-        }
-
         $market = self::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
         $direction = $this->getDirection($amount->getCoin(), $coin2);
         $rounding = PHP_ROUND_HALF_UP;
@@ -201,9 +207,9 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
             throw new \coinmonkey\exceptions\ErrorException('The market ' . $market . ' can not give $left</span>');
         }
 
-        $amount = array_Amount($costs);
+        $amount = array_sum($costs);
 
-        return new Order(round($amount, 8, $rounding), $coin2);
+        return new Amount(round($amount, 8, $rounding), $coin2);
     }
 
     public function buy(string $market, $amount, $rate)
@@ -304,7 +310,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return isset($history[$orderId]);
     }
 
-    private static function getMarketName($markets, Coin $coin1, Coin $coin2)
+    private static function getMarketName($markets, CoinInterface $coin1, CoinInterface $coin2)
     {
         $var1 = $coin1->getCode() . '-' . $coin2->getCode();
         $var2 = $coin2->getCode() . '-' . $coin1->getCode();

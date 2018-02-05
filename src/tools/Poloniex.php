@@ -11,6 +11,7 @@ class Poloniex
     private $booksCache;
     private $tool;
     private $cache = true;
+    private $currenciesCache;
 
     public function __construct($api_key, $api_secret, $cache = true) {
         $this->api_key = $api_key;
@@ -26,7 +27,7 @@ class Poloniex
         foreach($result['deposits'] as $deposit) {
             $tdiff = time()-$deposit['timestamp'];
 
-            if($deposit['Coin'] == $coin && $deposit['amount'] == $amount && $tdiff < $time) {
+            if($deposit['сoin'] == $coin && $deposit['amount'] == $amount && $tdiff < $time) {
                 return [
                     'id' => null,
                     'confirmations' => $deposit['confirmations'],
@@ -47,7 +48,7 @@ class Poloniex
         foreach($result['withdrawals'] as $withdrawal) {
             $tdiff = time()-$withdrawal['timestamp'];
 
-            $realAmount = $withdrawal['amount']-config('app.exchangesWithdrawalFees')['poloniex'][$coin];
+            $realAmount = $withdrawal['amount']-$this->tool->getWithdrawalFee($coin);
 
             if($address == $withdrawal['address'] && $withdrawal['Coin'] == $coin && (string) $realAmount == (string) $amount && $tdiff < $time) {
                 if(!isset($withdrawal['txid'])) {
@@ -78,15 +79,31 @@ class Poloniex
         return '1';
     }
 
-    public function getMinConfirmations($coin) : integer
+    public function getWithdrawalFee($currency)
     {
-        $currencies = $this->tool->get_currencies();
+        $currencies = $this->getCurrencies();
 
-        if(isset($currencies->{"$coin"})) {
-            return (int) $currencies->{"$coin"}->minConf;
+        if(isset($currencies[$currency])) {
+            return $currencies[$currency]['txFee'];
+        }
+
+        throw new \App\Exceptions\ErrorException("Poloniex API error (gwf)");
+    }
+
+    public function getMinConfirmations($currency) : int
+    {
+        $currencies = $this->getCurrencies();
+
+        if(isset($currencies[$currency])) {
+            return $currencies[$currency]['minConf'];
         }
 
         throw new \coinmonkey\exceptions\ErrorException("Poloniex getting confirmations count error");
+    }
+
+    public function getMinAmount($currency) : ?int
+    {
+        return null;
     }
 
     public function getMyActiveOrders($market) : array
@@ -201,9 +218,13 @@ class Poloniex
 
     public function getOrderBook(string $market)
     {
-        $content = file_get_contents('https://poloniex.com/public?command=returnOrderBook&CoinPair='.$this->retransformMarket($market).'&depth=10');
+        $content = file_get_contents('https://poloniex.com/public?command=returnOrderBook&currencyPair='.$this->retransformMarket($market).'&depth=10');
 
         $result = json_decode($content);
+
+        if(isset($result->error) && !empty($result->error)) {
+            throw new \coinmonkey\exceptions\ErrorException($result->error);
+        }
 
         if(!isset($result->asks)) {
             return [
@@ -261,6 +282,15 @@ class Poloniex
     private function transformMarket($marketName)
     {
         return str_replace('_', '-', $marketName);
+    }
+
+    private function getCurrencies()
+    {
+        if($this->cache && !$this->currenciesCache) {
+            $this->currenciesCache = $this->tool->get_currencies();
+        }
+
+        return $this->currenciesCache;
     }
 
     public function getFees() : array

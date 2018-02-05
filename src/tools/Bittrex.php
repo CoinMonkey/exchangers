@@ -2,17 +2,17 @@
 
 namespace coinmonkey\exchangers\tools;
 
-use coinmonkey\helpers\ExchangerHelper;
-
 class Bittrex {
     private $key = '';
     private $secret = '';
     private $booksCache;
     private $cache = true;
+    private $currenciesCache = false;
+    private $marketsCache = false;
 
-    public function __construct($api_key, $api_secret, $cache = true) {
-        $this->key = $api_key;
-        $this->secret = $api_secret;
+    public function __construct($apiKey, $apiSecret, $cache = true) {
+        $this->key = $apiKey;
+        $this->secret = $apiSecret;
         $this->cache = $cache;
     }
 
@@ -44,10 +44,10 @@ class Bittrex {
                 ];
             }
         }
-        
+
         return false;
     }
-    
+
     public function checkWithdrawById($id, $coin)
     {
         $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
@@ -74,10 +74,10 @@ class Bittrex {
                 ];
             }
         }
-        
+
         return false;
     }
-    
+
     public function checkDeposit($coin, $amount, $time)
     {
         $uri = 'https://bittrex.com/api/v1.1/account/getdeposithistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
@@ -107,36 +107,31 @@ class Bittrex {
                 ];
             }
         }
-        
+
         return false;
     }
-    
-    public function getMinConfirmations($coin)
+
+    public function getWithdrawalFee($currency)
     {
-        $uri = 'https://bittrex.com/api/v1.1/public/getcurrencies?apikey=' . $this->key . '&nonce=' . time();
+        $currencies = $this->getCurrencies();
 
-        $ch = curl_init($uri);
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
-
-        $execResult = curl_exec($ch);
-
-        $obj = json_decode($execResult);
-
-        $currencies = [];
-
-        foreach($obj->result as $coin) {
-            $currencies[$coin->coin] = $coin->MinConfirmation;
-        }
-
-        if(!isset($currencies[$coin])) {
-            return null;
-        }
-        
-        return (int) $currencies[$coin];
+        return $currencies[$currency]->TxFee;
     }
-    
+
+    public function getMinConfirmations($currency)
+    {
+        $currencies = $this->getCurrencies();
+
+        return (int) $currencies[$currency]->MinConfirmation;
+    }
+
+    public function getMinAmount($market)
+    {
+        $markets = $this->getMarketsData();
+
+        return $markets[$market]->MinTradeSize;
+    }
+
     public function getDepositAddress(string $coin)
     {
         $uri = 'https://bittrex.com/api/v1.1/account/getdepositaddress?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
@@ -196,7 +191,7 @@ class Bittrex {
 
         if(!$obj = json_decode($execResult)) {
             throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex ', $execResult, null, 1);
-             
+
             return [
                 'asks' => [],
                 'bids' => [],
@@ -262,7 +257,7 @@ class Bittrex {
             $price = $order->Quantity;
         }
         $price = $price-($price*$this->getFees()['take']);
-        
+
         return [
             'raw_data' => $order,
             'open' => $order->IsOpen,
@@ -481,5 +476,57 @@ class Bittrex {
             'take' => '0.0025',
             'make' => '0.0025',
         ];
+    }
+
+    public function getMarketsData()
+    {
+        if(!$this->marketsCache) {
+            $uri = 'https://bittrex.com/api/v1.1/public/getmarkets?apikey=' . $this->key . '&nonce=' . time();
+
+            $ch = curl_init($uri);
+            curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+
+            $execResult = curl_exec($ch);
+
+            $obj = json_decode($execResult);
+
+            $currencies = [];
+
+            foreach($obj->result as $market) {
+                $currencies[$market->MarketName] = $market;
+            }
+
+            $this->marketsCache = $currencies;
+        }
+
+        return $this->marketsCache;
+    }
+
+    public function getCurrencies()
+    {
+        if($this->cache && !$this->currenciesCache) {
+            $uri = 'https://bittrex.com/api/v1.1/public/getcurrencies?apikey=' . $this->key . '&nonce=' . time();
+
+            $ch = curl_init($uri);
+            curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+
+            $execResult = curl_exec($ch);
+
+            $obj = json_decode($execResult);
+
+            $currencies = [];
+
+            foreach($obj->result as $currency) {
+                $currencies[$currency->Currency] = $currency;
+            }
+
+            $this->currenciesCache = $currencies;
+        }
+
+        return $this->currenciesCache;
     }
 }

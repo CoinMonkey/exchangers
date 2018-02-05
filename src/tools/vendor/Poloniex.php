@@ -75,11 +75,7 @@ class Poloniex {
     }
 
     public function get_currencies() {
-        return $this->query(
-            array(
-                'command' => 'returnCurrencies'
-            )
-        );
+        return $this->retrieveJSON($this->public_url . '?command=returnCurrencies');
     }
 
     public function get_balances() {

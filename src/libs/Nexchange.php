@@ -3,11 +3,12 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\entities\Order;
+use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\AmountInterface;
+use coinmonkey\interfaces\CoinInterface;
+use coinmonkey\interfaces\OrderInterface as OrderExchange;
 use coinmonkey\entities\Amount;
-use coinmonkey\entities\Coin;
-use coinmonkey\entities\Order as OrderExchange;
-use coinmonkey\exchangers\tools\Nexchange;
+use coinmonkey\exchangers\tools\Nexchange as NexchangeTool;
 
 class Nexchange implements InstantExchangerInterface
 {
@@ -16,12 +17,13 @@ class Nexchange implements InstantExchangerInterface
     private $cache;
 
     const STRING_ID = 'nexchange';
+    const EXCHANGER_TYPE = 'instant';
 
     public function __construct($referral, $cache = true)
     {
         $this->referral = $referral;
         $this->cache = $cache;
-        $this->tool = new Nexchange($referral);
+        $this->tool = new NexchangeTool($referral);
     }
 
     public function getId() : string
@@ -29,12 +31,12 @@ class Nexchange implements InstantExchangerInterface
         return self::STRIND_ID;
     }
 
-    public function withdraw(string $address, Amount $amount)
+    public function withdraw(string $address, AmountInterface $amount)
     {
         return null;
     }
 
-    public function getExchangeStatus(OrderExchange $order) : ?integer
+    public function getExchangeStatus(OrderExchange $order) : ?int
     {
         $address = $order->getAddress();
 
@@ -51,25 +53,35 @@ class Nexchange implements InstantExchangerInterface
         return null;
     }
 
-    public function getEstimateAmount(Amount $amount, Coin $coin2) : Order
+    public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface
     {
         $minimum = $this->tool->getMinimum($amount->getCoin()->getCode());
         $maximum = $this->tool->getMaximum($coin2->getCode());
 
-        if($amount->getGivenAmount() > $maximum | $amount->getGivenAmount() < $minimum) {
+        if($amount->getAmount() > $maximum | $amount->getAmount() < $minimum) {
             throw new \App\Exceptions\ErrorException('Minimum is ' . $minimum . ' ' . $amount->getCoin()->getCode() . ' and maximum is ' . $maximum . ' ' . $amount->getCoin()->getCode(), null, null, 0);
         }
 
-        $cost = $this->tool->getPrice($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getGivenAmount());
+        $cost = $this->tool->getPrice($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getAmount());
 
         $cost = $cost-$this->tool->getWithdrawalFee($coin2->getCode());
 
-        return new Order(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
+        return new Amount(round($cost, 8, PHP_ROUND_HALF_UP), $coin2);
     }
 
-    public function makeDepositAddress(string $clientAddress, Amount $amount, Coin $coin2) : array
+    public function getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
     {
-        $res = $this->tool->createAnonymousOrder($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getGivenAmount(), $clientAddress);
+        return $this->tool->getMinimum($coin->getCode());
+    }
+
+    public function getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
+    {
+        return $this->tool->getMaximum($coin->getCode());
+    }
+
+    public function makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array
+    {
+        $res = $this->tool->createAnonymousOrder($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getAmount(), $clientAddress);
 
         return [
             'private' => null,
@@ -79,7 +91,7 @@ class Nexchange implements InstantExchangerInterface
         ];
     }
 
-    public function getMinConfirmations(Coin $coin)
+    public function getMinConfirmations(CoinInterface $coin)
     {
         return $this->tool->getMinConfirmations($coin->getCode());
     }
