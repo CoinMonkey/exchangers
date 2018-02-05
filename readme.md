@@ -10,7 +10,7 @@ The following methods are available for Poloniex, Bittrex (classic exchangers), 
 *  getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
 *  getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
 
-The following methods are available for Poloniex and Bittrex (Bitfinex comin soon)
+The following methods are available for classic exchangers like Poloniex and Bittrex (Bitfinex coming soon)
 
 *  exchange(AmountInterface $amount, CoinInterface $coin2);
 *  buy(string $market, $amount, $rate);
