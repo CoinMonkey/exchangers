@@ -1,6 +1,37 @@
-# PHP Libs for popular crypto-exchangers
+# PHP libraries for popular crypto-exchangers
+
+This libraries working for find best rates and make exchanges via singe polymorfing fabric.
 
 The following methods are available for Poloniex, Bittrex (classic exchangers), Shapeshift, Changer, Changelly, Nexchange (instant exchangers).
+
+*  getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface;
+*  makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array;
+*  getExchangeStatus(OrderExchange $order) : ?int;
+*  getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
+*  getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
+
+The following methods are available for Poloniex and Bittrex (Bitfinex comin soon)
+
+*  exchange(AmountInterface $amount, CoinInterface $coin2);
+*  buy(string $market, $amount, $rate);
+*  sell(string $market, $amount, $rate);
+*  getOrderBook(string $market);
+*  getMarkets() : array;
+*  getBalances() : array;
+*  getOrder(string $id, $market = '') : ?array;
+*  getBestMake(string $market, $rate, string $direction);
+*  isMakeBest(string $market, $rate, string $direction) : bool;
+*  isMakeBroken($orderId, $amount, $market = '') : bool;
+*  cancelOrder($orderId, $market = '') : bool;
+*  activeOrderExists($orderId, string $market) : bool;
+*  getMyActiveOrders(string $market) : array;
+*  getOrders(string $market) : array;
+*  getRates(string $market) : array;
+*  checkDeposit(AmountInterface $amount, int $time);
+*  checkWithdraw(AmountInterface $amount, $address, int $time);
+*  checkWithdrawById($id, $coin = null);
+*  getMinConfirmations(CoinInterface $coin) : ?int;
+*  getWithdrawalFee(CoinInterface $coin) : ?float;
 
 ## Install
 
