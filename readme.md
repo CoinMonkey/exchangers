@@ -95,6 +95,6 @@ foreach($exchangers as $exchangerName) {
     echo " - withdrawal fee " .  $exchanger->getWithdrawalFee($coin2) . "\n";
     echo " - min coinfirmations " .  $exchanger->getMinConfirmations($coin1) . "\n";
     //If it's OK you can call $order = $exchanger->makeDepositAddress('1JBPkwCuTpwcyEbhBkAKdTfU9K1zRLX5Ym', $amount, $coin2)
-    //And check status later by  $exchanger->getStatus($order['id']);
+    //In this case we should make CRON checker of deposit status and make exchange "manualy" + withdrawal (example will be later)
 }
 ```
