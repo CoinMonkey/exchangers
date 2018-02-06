@@ -8,6 +8,7 @@ use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\interfaces\OrderInterface as OrderExchange;
 use coinmonkey\entities\Amount;
+use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Changelly as ChangellyTool;
 
 class Changelly implements InstantExchangerInterface
@@ -35,18 +36,30 @@ class Changelly implements InstantExchangerInterface
 
     public function getExchangeStatus($id) : ?int
     {
-        $status = $this->tool->request('getStatus', ['id' => $id]);
+        $statusId = $this->tool->request('getStatus', ['id' => $id]);
 
-        switch($status) {
-            case 'waiting': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
-            case 'confirming': return OrderExchange::STATUS_YOU_DID_TRANSACTION;
-            case 'exchanging': return OrderExchange::STATUS_EXCHANGER_PROCESSING;
-            case 'sending': return OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION;
-            case 'finished': return OrderExchange::STATUS_DONE;
-            default: return OrderExchange::STATUS_FAIL;
+        switch($statusId) {
+            case 'waiting': $status = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
+            case 'confirming': $status = OrderExchange::STATUS_YOU_DID_TRANSACTION; break;
+            case 'exchanging': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
+            case 'sending': $status = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
+            case 'finished': $status = OrderExchange::STATUS_DONE; break;
+            default: $status = OrderExchange::STATUS_FAIL; break;
         }
 
-        return null;
+        $tx1 = null;
+        $tx2 = null;
+
+        if($status == OrderExchange::STATUS_DONE) {
+            if($txes = $this->tool->request('getTransactions', ['extraId' => $id, "limit" => 10, "offset" => 0])) {
+                foreach($txes as $key => $tx) {
+                    if($key == 1) $tx1 = $tx->payoutHash;
+					if($key == 2) $tx2 = $tx->payoutHash;
+				}
+            }
+        }
+
+        return new Status($status, $tx1, $tx2);
     }
 
     public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface

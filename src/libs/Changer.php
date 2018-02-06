@@ -8,6 +8,7 @@ use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\interfaces\OrderInterface as OrderExchange;
 use coinmonkey\entities\Amount;
+use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Changer as ChangerTool;
 use coinmonkey\exchangers\tools\ChangerAuth;
 
@@ -38,16 +39,23 @@ class Changer implements InstantExchangerInterface
 
     public function getExchangeStatus($id) : ?int
     {
-        $return = $this->tool->checkExchange($id);
+        $statusData = $this->tool->checkExchange($id);
 
-        switch($return->status) {
-            case 'new': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
-            case 'processing': return OrderExchange::STATUS_EXCHANGER_PROCESSING;
-            case 'processed': return OrderExchange::STATUS_DONE;
-            default: return OrderExchange::STATUS_FAIL;
+        switch($statusData->status) {
+            case 'new': $status = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
+            case 'processing': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
+            case 'processed': $status = OrderExchange::STATUS_DONE; break;
+            default: $status = OrderExchange::STATUS_FAIL; break;
         }
 
-        return null;
+        $tx1 = null;
+        $tx2 = null;
+
+        if(isset($statusData->batch_out) && !empty($statusData->batch_out)) {
+            $tx2 = $statusData->batch_out;
+        }
+
+        return new Status($status, $tx1, $tx2);
     }
 
     public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface

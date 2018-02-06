@@ -8,6 +8,7 @@ use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\interfaces\OrderInterface as OrderExchange;
 use coinmonkey\entities\Amount;
+use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Nexchange as NexchangeTool;
 
 class Nexchange implements InstantExchangerInterface
@@ -41,14 +42,27 @@ class Nexchange implements InstantExchangerInterface
         $nxOrder = $this->tool->getOrder($id);
 
         switch($nxOrder->status_name[0][0]) {
-            case '11': return OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION;
-            case '12': return OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING;
-            case '13': return OrderExchange::STATUS_EXCHANGER_PROCESSING;
-            case '15': return OrderExchange::STATUS_DONE;
-            default: return OrderExchange::STATUS_DONE;
+            case '11': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
+            case '12': $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
+            case '13': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
+            case '15': $status = OrderExchange::STATUS_DONE; break;
+            default: $status = OrderExchange::STATUS_DONE; break;
         }
 
-        return null;
+        $tx1 = null;
+        $tx2 = null;
+
+        if(isset($nxOrder->transactions)) {
+            foreach($nxOrder->transactions as $nctrx) {
+                if($nctrx->type == 'W') {
+                    $tx2 = $nctrx->tx_id;
+                } else {
+                    $tx1 = $nctrx->tx_id;
+                }
+            }
+        }
+
+        return new Status($status, $tx1, $tx2);
     }
 
     public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface

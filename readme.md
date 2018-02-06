@@ -6,7 +6,7 @@ The following methods are available for Poloniex, Bittrex (classic exchangers), 
 
 *  getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface;
 *  makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array;
-*  getExchangeStatus($id) : ?int;
+*  getExchangeStatus(Status $status) : ?int;
 *  getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
 *  getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
 

@@ -9,6 +9,7 @@ use \Achse\ShapeShiftIo\Client;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\interfaces\OrderInterface as OrderExchange;
 use coinmonkey\entities\Amount;
+use coinmonkey\entities\Status;
 
 class ShapeShift implements InstantExchangerInterface
 {
@@ -36,16 +37,23 @@ class ShapeShift implements InstantExchangerInterface
 
     public function getExchangeStatus($id) : ?int
     {
-        $return = $this->tool->getStatusOfDepositToAddress($id);
+        $order = $this->tool->getStatusOfDepositToAddress($id);
 
-        switch($return->status) {
-            case 'no_deposits': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
-            case 'received': return OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION;
-            case 'complete': return OrderExchange::STATUS_DONE;
-            default: return OrderExchange::STATUS_FAIL;
+        switch($order->status) {
+            case 'no_deposits': $status = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
+            case 'received': $status = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
+            case 'complete': $status = OrderExchange::STATUS_DONE; break;
+            default: $status = OrderExchange::STATUS_FAIL; break;
         }
 
-        return null;
+        $tx1 = null;
+        $tx2 = null;
+
+        if(isset($order->transaction)) {
+            $tx2 = $return->transaction;
+        }
+
+        return new Status($status, $tx1, $tx2);
     }
 
     public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface
