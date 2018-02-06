@@ -72,9 +72,9 @@ class Nexchange
     {
         $currencies = $this->getCurrencies();
 
-        foreach($currencies as $coin) {
-            if($coin->getCode() == $coin) {
-                return $coin->minimal_amount;
+        foreach($currencies as $currency) {
+            if($coin == $currency->code) {
+                return $currency->minimal_amount;
             }
         }
 
@@ -85,9 +85,9 @@ class Nexchange
     {
         $currencies = $this->getCurrencies();
 
-        foreach($currencies as $coin) {
-            if($coin->getCode() == $coin) {
-                return $coin->maximal_amount;
+        foreach($currencies as $currency) {
+            if($coin == $currency->code) {
+                return $currency->maximal_amount;
             }
         }
 
@@ -111,9 +111,9 @@ class Nexchange
     {
         $currencies = $this->getCurrencies();
 
-        foreach($currencies as $coin) {
-            if($coin->getCode() == $coin) {
-                return $coin->withdrawal_fee;
+        foreach($currencies as $currency) {
+            if($coin == $currency->code) {
+                return $currency->withdrawal_fee;
             }
         }
 
