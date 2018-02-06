@@ -1,6 +1,6 @@
 # PHP libraries for a popular crypto-exchangers
 
-This libraries working for a finding best rates and make exchanges via singe polymorfing fabric.
+This libraries working for a finding the best rates and make an exchanges via singe polymorfing fabric.
 
 The following methods are available for Poloniex, Bittrex (classic exchangers), Shapeshift, Changer, Changelly, Nexchange (instant exchangers).
 
@@ -10,7 +10,7 @@ The following methods are available for Poloniex, Bittrex (classic exchangers), 
 *  getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
 *  getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int;
 
-The following methods are available for a classic exchangers like Poloniex and Bittrex (Bitfinex coming soon)
+The following methods are available for a classic exchangers like a Poloniex and Bittrex (Bitfinex coming soon)
 
 *  exchange(AmountInterface $amount, CoinInterface $coin2);
 *  buy(string $market, $amount, $rate);
@@ -39,7 +39,7 @@ The following methods are available for a classic exchangers like Poloniex and B
 composer require coinmonkey/exchangers-api @dev
 ```
 
-Please note that libraries are in in development. Don't use it in prodution projects.
+Please note that libraries are in in development. Don't use it in production projects.
 
 Production version coming soon (but I'm not sure).
 
