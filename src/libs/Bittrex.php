@@ -74,7 +74,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $this->tool->getWithdrawalFee($coin->getCode());
     }
 
-    public function getExchangeStatus(OrderExchange $order) : int
+    public function getExchangeStatus($id) : int
     {
         return null;
     }

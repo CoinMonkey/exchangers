@@ -69,7 +69,7 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
         return $this->tool;
     }
 
-    public function getExchangeStatus(OrderExchange $order) : int
+    public function getExchangeStatus($id) : int
     {
         return null;
     }

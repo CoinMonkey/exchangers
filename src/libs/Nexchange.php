@@ -36,11 +36,9 @@ class Nexchange implements InstantExchangerInterface
         return null;
     }
 
-    public function getExchangeStatus(OrderExchange $order) : ?int
+    public function getExchangeStatus($id) : ?int
     {
-        $address = $order->getAddress();
-
-        $nxOrder = $this->tool->getOrder($address->getExchangerOrderId());
+        $nxOrder = $this->tool->getOrder($id);
 
         switch($nxOrder->status_name[0][0]) {
             case '11': return OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION;
@@ -84,8 +82,6 @@ class Nexchange implements InstantExchangerInterface
         $res = $this->tool->createAnonymousOrder($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getAmount(), $clientAddress);
 
         return [
-            'private' => null,
-            'public' => null,
             'address' => $res->deposit_address->address,
             'id' => $res->unique_reference,
         ];

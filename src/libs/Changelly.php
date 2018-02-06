@@ -33,10 +33,9 @@ class Changelly implements InstantExchangerInterface
         $this->cache = $cache;
     }
 
-    public function getExchangeStatus(OrderExchange $order) : ?int
+    public function getExchangeStatus($id) : ?int
     {
-        $address = $order->getAddress();
-        $status = $this->tool->request('getStatus', ['id' => $address->getExchangerOrderId()]);
+        $status = $this->tool->request('getStatus', ['id' => $id]);
 
         switch($status) {
             case 'waiting': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
@@ -78,8 +77,6 @@ class Changelly implements InstantExchangerInterface
         $res = $this->tool->request('createTransaction', ['amount' => $amount->getAmount(), 'from' => $amount->getCoin()->getCode(), 'to' => $coin2->getCode(), 'address' => $clientAddress]);
 
         return [
-            'private' => null,
-            'public' => null,
             'address' => $res->payinAddress,
             'id' => $res->id,
         ];

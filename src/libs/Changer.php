@@ -36,10 +36,9 @@ class Changer implements InstantExchangerInterface
         $this->tool = new ChangerTool(new ChangerAuth($key, $secure));
     }
 
-    public function getExchangeStatus(OrderExchange $order) : ?int
+    public function getExchangeStatus($id) : ?int
     {
-        $address = $order->getAddress();
-        $return = $this->tool->checkExchange($address->getExchangerOrderId());
+        $return = $this->tool->checkExchange($id);
 
         switch($return->status) {
             case 'new': return OrderExchange::STATUS_WAIT_YOUR_TRANSACTION;
@@ -93,8 +92,6 @@ class Changer implements InstantExchangerInterface
         $res = $this->tool->makeExchange($data);
 
         return [
-            'private' => null,
-            'public' => null,
             'address' => $res->payee,
             'id' => $res->exchange_id,
         ];

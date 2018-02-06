@@ -141,8 +141,6 @@ class Poloniex
         }
 
         return [
-            'private' => null,
-            'public' => null,
             'address' => $address,
             'id' => null,
         ];

@@ -150,8 +150,6 @@ class Bittrex {
         }
 
         return [
-            'private' => null,
-            'public' => null,
             'address' => $result->result->Address,
             'id' => null,
         ];
