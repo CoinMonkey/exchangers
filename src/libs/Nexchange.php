@@ -37,16 +37,20 @@ class Nexchange implements InstantExchangerInterface
         return null;
     }
 
-    public function getExchangeStatus($id) : Status
+    public function getExchangeStatus($id) : ?Status
     {
         $nxOrder = $this->tool->getOrder($id);
 
-        switch($nxOrder->status_name[0][0]) {
-            case '11': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
-            case '12': $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
-            case '13': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-            case '15': $status = OrderExchange::STATUS_DONE; break;
-            default: $status = OrderExchange::STATUS_DONE; break;
+        $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION;
+
+        if(isset($nxOrder->status_name)) {
+            switch($nxOrder->status_name[0][0]) {
+                case '11': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
+                case '12': $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
+                case '13': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
+                case '15': $status = OrderExchange::STATUS_DONE; break;
+                default: $status = OrderExchange::STATUS_DONE; break;
+            }
         }
 
         $tx1 = null;

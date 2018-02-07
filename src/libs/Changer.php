@@ -37,7 +37,7 @@ class Changer implements InstantExchangerInterface
         $this->tool = new ChangerTool(new ChangerAuth($key, $secure));
     }
 
-    public function getExchangeStatus($id) : Status
+    public function getExchangeStatus($id) : ?Status
     {
         $statusData = $this->tool->checkExchange($id);
 

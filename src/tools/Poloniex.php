@@ -137,7 +137,7 @@ class Poloniex
         $address = $this->tool->get_deposit_address($coin);
 
         if(!$address) {
-            throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make an address for deposit.", $address);
+            throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make an address for deposit.");
         }
 
         return [
@@ -174,7 +174,7 @@ class Poloniex
         $result = $this->tool->buy($this->retransformMarket($market), $rate, $amount);
 
         if(isset($result['error'])) {
-            throw new \coinmonkey\exceptions\ErrorException("Poloniex coudn't buy $market, $amount, $rate", json_encode($result));
+            throw new \coinmonkey\exceptions\ErrorException("Poloniex coudn't buy $market, $amount, $rate");
         }
 
         return $result['orderNumber'];
@@ -186,7 +186,7 @@ class Poloniex
         $result = $this->tool->sell($this->retransformMarket($market), $rate, $amount);
 
         if(isset($result['error'])) {
-            throw new \coinmonkey\exceptions\ErrorException("poloniex coudn't sell $market, $amount, $rate ", json_encode($result));
+            throw new \coinmonkey\exceptions\ErrorException("poloniex coudn't sell $market, $amount, $rate ");
         }
 
         return $result['orderNumber'];

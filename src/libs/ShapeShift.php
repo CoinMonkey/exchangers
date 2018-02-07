@@ -35,7 +35,7 @@ class ShapeShift implements InstantExchangerInterface
         return self::STRIND_ID;
     }
 
-    public function getExchangeStatus($id) : ?int
+    public function getExchangeStatus($id) : ?Status
     {
         $order = $this->tool->getStatusOfDepositToAddress($id);
 
@@ -50,7 +50,7 @@ class ShapeShift implements InstantExchangerInterface
         $tx2 = null;
 
         if(isset($order->transaction)) {
-            $tx2 = $return->transaction;
+            $tx2 = $order->transaction;
         }
 
         return new Status($status, $tx1, $tx2);

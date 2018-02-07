@@ -34,7 +34,7 @@ class Changelly implements InstantExchangerInterface
         $this->cache = $cache;
     }
 
-    public function getExchangeStatus($id) : Status
+    public function getExchangeStatus($id) : ?Status
     {
         $statusId = $this->tool->request('getStatus', ['id' => $id]);
 

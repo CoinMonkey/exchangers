@@ -10,6 +10,7 @@ use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\entities\Amount;
+use coinmonkey\entities\Status;
 use coinmonkey\entities\Order as OrderExchange;
 
 class Poloniex implements ExchangerInterface, InstantExchangerInterface
@@ -69,7 +70,7 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
         return $this->tool;
     }
 
-    public function getExchangeStatus($id) : int
+    public function getExchangeStatus($id) : ?Status
     {
         return null;
     }

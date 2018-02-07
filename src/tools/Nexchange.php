@@ -28,7 +28,7 @@ class Nexchange
         $direction = $this->getDirection($depositCoin, $destinationCoin);
 
         if(!$result[0] | !$price = $result[0]->ticker->{$direction}) {
-            throw new \App\Exceptions\ErrorException('Error while taking price ', null, null, 0);
+            throw new \App\Exceptions\ErrorException('Error while taking price ');
         }
 
         if($direction != 'bid') {
@@ -99,8 +99,8 @@ class Nexchange
         $currencies = $this->getCurrencies();
 
         foreach($currencies as $currency) {
-            if($currency->getCode() == $currency) {
-                return $coin->min_confirmations;
+            if($coin == $currency->code) {
+                return $currency->min_confirmations;
             }
         }
 

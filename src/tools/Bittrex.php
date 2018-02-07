@@ -30,7 +30,7 @@ class Bittrex {
         $result = json_decode($execResult);
 
         if(!$result->success) {
-            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't check deposit.", $execResult);
+            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't check deposit.");
         }
 
         foreach($result->result as $withdraw) {
@@ -62,7 +62,7 @@ class Bittrex {
         $result = json_decode($execResult);
 
         if(!$result->success) {
-            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't check deposit.", $execResult);
+            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't check deposit.");
         }
 
         foreach($result->result as $withdraw) {
@@ -92,18 +92,18 @@ class Bittrex {
         $result = json_decode($execResult);
 
         if(!$result->success) {
-            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't check deposit.", $execResult);
+            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't check deposit.");
         }
 
         foreach($result->result as $deposit) {
             $tdiff = time()-strtotime($deposit->LastUpdated);
 
-            if($deposit->amount == $amount && $tdiff < $time) {
+            if($deposit->Amount == $amount && $tdiff < $time) {
                 return [
                     'id' => $deposit->Id,
                     'confirmations' => $deposit->Confirmations,
                     'txId' => $deposit->TxId,
-                    'amount' => $deposit->amount,
+                    'amount' => $deposit->Amount,
                 ];
             }
         }
@@ -134,7 +134,7 @@ class Bittrex {
 
     public function getDepositAddress(string $coin)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getdepositaddress?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getdepositaddress?apikey=' . $this->key . '&currency=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -146,7 +146,7 @@ class Bittrex {
         $result = json_decode($execResult);
 
         if(!$result->success) {
-            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't make an address for deposit.", $execResult);
+            throw new \coinmonkey\exceptions\ErrorException("Bittrex can't make an address for deposit.");
         }
 
         return [
@@ -188,7 +188,7 @@ class Bittrex {
         $execResult = curl_exec($ch);
 
         if(!$obj = json_decode($execResult)) {
-            throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex ', $execResult, null, 1);
+            throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex');
 
             return [
                 'asks' => [],
@@ -200,7 +200,7 @@ class Bittrex {
         $result = $obj->result;
 
         if(!isset($result->sell)) {
-            throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex', $execResult, null, 1);
+            throw new \coinmonkey\exceptions\ErrorException('getorderbook error on Bittrex');
 
             return [
                 'asks' => [],
@@ -308,7 +308,7 @@ class Bittrex {
         $result = ($obj->success == true);
 
         if(!$result) {
-            throw new \coinmonkey\exceptions\ErrorException("bittrex buy $market, $amount, $rate ", json_encode($obj));
+            throw new \coinmonkey\exceptions\ErrorException("bittrex buy $market, $amount, $rate ");
         }
 
         return $obj->result->uuid;
@@ -331,7 +331,7 @@ class Bittrex {
         $result = ($obj->success == true);
 
         if(!$result) {
-            throw new \coinmonkey\exceptions\ErrorException("bittrex sell $market, $amount, $rate", json_encode($obj));
+            throw new \coinmonkey\exceptions\ErrorException("bittrex sell $market, $amount, $rate");
         }
 
         return $obj->result->uuid;
