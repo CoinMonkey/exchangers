@@ -6,10 +6,10 @@ use coinmonkey\interfaces\ExchangerInterface;
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\exchangers\tools\Bittrex as BittrexTool;
 use coinmonkey\entities\Amount;
-use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\OrderInterface;
+use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\interfaces\OrderInterface as OrderExchange;
 
 class Bittrex implements ExchangerInterface, InstantExchangerInterface
 {
@@ -72,11 +72,6 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
     public function getWithdrawalFee(CoinInterface $coin) : ?float
     {
         return $this->tool->getWithdrawalFee($coin->getCode());
-    }
-
-    public function getExchangeStatus($id) : int
-    {
-        return null;
     }
 
     public function withdraw(string $address, AmountInterface $amount)

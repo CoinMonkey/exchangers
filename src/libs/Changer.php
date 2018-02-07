@@ -3,10 +3,10 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\interfaces\OrderInterface as OrderExchange;
+use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Changer as ChangerTool;
@@ -37,7 +37,7 @@ class Changer implements InstantExchangerInterface
         $this->tool = new ChangerTool(new ChangerAuth($key, $secure));
     }
 
-    public function getExchangeStatus($id) : ?int
+    public function getExchangeStatus($id) : Status
     {
         $statusData = $this->tool->checkExchange($id);
 

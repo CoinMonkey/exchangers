@@ -3,11 +3,11 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use \Achse\ShapeShiftIo\Client;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\interfaces\OrderInterface as OrderExchange;
+use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 

@@ -6,11 +6,11 @@ use coinmonkey\interfaces\ExchangerInterface;
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\exchangers\tools\Poloniex as PoloniexTool;
 use coinmonkey\helpers\ExchangerHelper;
-use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\entities\Amount;
-use coinmonkey\interfaces\OrderInterface as OrderExchange;
+use coinmonkey\entities\Order as OrderExchange;
 
 class Poloniex implements ExchangerInterface, InstantExchangerInterface
 {

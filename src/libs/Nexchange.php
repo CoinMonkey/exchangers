@@ -3,10 +3,10 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\interfaces\OrderInterface as OrderExchange;
+use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Nexchange as NexchangeTool;
@@ -37,7 +37,7 @@ class Nexchange implements InstantExchangerInterface
         return null;
     }
 
-    public function getExchangeStatus($id) : ?int
+    public function getExchangeStatus($id) : Status
     {
         $nxOrder = $this->tool->getOrder($id);
 

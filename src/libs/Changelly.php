@@ -3,10 +3,10 @@
 namespace coinmonkey\exchangers\libs;
 
 use coinmonkey\interfaces\InstantExchangerInterface;
-use coinmonkey\interfaces\OrderInterfaceInterface;
+use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\interfaces\OrderInterface as OrderExchange;
+use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Changelly as ChangellyTool;
@@ -34,7 +34,7 @@ class Changelly implements InstantExchangerInterface
         $this->cache = $cache;
     }
 
-    public function getExchangeStatus($id) : ?int
+    public function getExchangeStatus($id) : Status
     {
         $statusId = $this->tool->request('getStatus', ['id' => $id]);
 
