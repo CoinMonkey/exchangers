@@ -18,7 +18,7 @@ class Bittrex {
 
     public function checkWithdraw($coin, $address, $amount, $time)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&currency=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -50,7 +50,7 @@ class Bittrex {
 
     public function checkWithdrawById($id, $coin)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getwithdrawalhistory?apikey=' . $this->key . '&currency=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -80,7 +80,7 @@ class Bittrex {
 
     public function checkDeposit($coin, $amount, $time)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/getdeposithistory?apikey=' . $this->key . '&Coin=' . $coin . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/getdeposithistory?apikey=' . $this->key . '&currency=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
@@ -157,7 +157,7 @@ class Bittrex {
 
     public function withdraw(string $address, $amount, $coin)
     {
-        $uri = 'https://bittrex.com/api/v1.1/account/withdraw?apikey=' . $this->key . '&quantity=' . $amount . '&address=' . $address . '&Coin=' . $coin . '&nonce=' . time();
+        $uri = 'https://bittrex.com/api/v1.1/account/withdraw?apikey=' . $this->key . '&quantity=' . $amount . '&address=' . $address . '&currency=' . $coin . '&nonce=' . time();
 
         $ch = curl_init($uri);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
