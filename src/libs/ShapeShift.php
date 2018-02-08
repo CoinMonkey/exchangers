@@ -35,12 +35,12 @@ class ShapeShift implements InstantExchangerInterface
         return self::STRIND_ID;
     }
 
-    public function getExchangeStatus($id) : ?Status
+    public function getExchangeStatus($id, $payInAddress) : ?Status
     {
         $order = $this->tool->getStatusOfDepositToAddress($id);
 
         switch($order->status) {
-            case 'no_deposits': $status = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
+            case 'no_deposits': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
             case 'received': $status = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
             case 'complete': $status = OrderExchange::STATUS_DONE; break;
             default: $status = OrderExchange::STATUS_FAIL; break;

@@ -37,7 +37,7 @@ class Nexchange implements InstantExchangerInterface
         return null;
     }
 
-    public function getExchangeStatus($id) : ?Status
+    public function getExchangeStatus($id, $payInAddress) : ?Status
     {
         $nxOrder = $this->tool->getOrder($id);
 
@@ -58,6 +58,10 @@ class Nexchange implements InstantExchangerInterface
 
         if(isset($nxOrder->transactions)) {
             foreach($nxOrder->transactions as $nctrx) {
+                if($status == OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION && $nctrx->type == 'D') {
+                    $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING;
+                }
+
                 if($nctrx->type == 'W') {
                     $tx2 = $nctrx->tx_id;
                 } else {
@@ -98,6 +102,14 @@ class Nexchange implements InstantExchangerInterface
     public function makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array
     {
         $res = $this->tool->createAnonymousOrder($amount->getCoin()->getCode(), $coin2->getCode(), $amount->getAmount(), $clientAddress);
+
+        if(!isset($res->deposit_address)) {
+            if(isset($res->non_field_errors)) {
+                throw new \coinmonkey\exceptions\ErrorException(htmlspecialchars($res->non_field_errors[0]));
+            }
+
+            throw new \coinmonkey\exceptions\ErrorException('Can not make address for deposit');
+        }
 
         return [
             'address' => $res->deposit_address->address,

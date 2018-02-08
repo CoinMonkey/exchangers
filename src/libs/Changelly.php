@@ -34,13 +34,13 @@ class Changelly implements InstantExchangerInterface
         $this->cache = $cache;
     }
 
-    public function getExchangeStatus($id) : ?Status
+    public function getExchangeStatus($id, $payInAddress) : ?Status
     {
         $statusId = $this->tool->request('getStatus', ['id' => $id]);
 
         switch($statusId) {
-            case 'waiting': $status = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
-            case 'confirming': $status = OrderExchange::STATUS_YOU_DID_TRANSACTION; break;
+            case 'waiting': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
+            case 'confirming': $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
             case 'exchanging': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
             case 'sending': $status = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
             case 'finished': $status = OrderExchange::STATUS_DONE; break;
@@ -51,10 +51,10 @@ class Changelly implements InstantExchangerInterface
         $tx2 = null;
 
         if($status == OrderExchange::STATUS_DONE) {
-            if($txes = $this->tool->request('getTransactions', ['extraId' => $id, "limit" => 10, "offset" => 0])) {
+            if($txes = $this->tool->request('getTransactions', ['address' => $address, "limit" => 10, "offset" => 0])) {
                 foreach($txes as $key => $tx) {
-                    if($key == 1) $tx1 = $tx->payoutHash;
-					if($key == 2) $tx2 = $tx->payoutHash;
+                    $tx1 = $tx->payinHash;
+                    $tx2 = $tx->payoutHash;
 				}
             }
         }

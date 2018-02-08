@@ -75,7 +75,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         return $this->tool->getWithdrawalFee($coin->getCode());
     }
 
-    public function getExchangeStatus($id) : ?Status
+    public function getExchangeStatus($id, $payInAddress) : ?Status
     {
         return null;
     }
@@ -108,14 +108,14 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
 
     public function getRate(AmountInterface $amount, CoinInterface $coin2)
     {
-        $amount = $this->getEstimateAmount($amount, $coin2);
+        $estimateGetAmount = $this->getEstimateAmount($amount, $coin2);
 
         $direction = $this->getDirection($amount->getCoin(), $coin2);
 
         if($direction == 'asks') {
-            $rate = $amount->getAmount()/$amount->getAmount();
+            $rate = $amount->getAmount()/$estimateGetAmount->getAmount();
         } else {
-            $rate = $amount->getAmount()/$amount->getAmount();
+            $rate = $estimateGetAmount->getAmount()/$amount->getAmount();
         }
 
         return $rate;
@@ -205,7 +205,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         }
 
         if($left > 0) {
-            throw new \coinmonkey\exceptions\ErrorException('The market ' . $market . ' can not give $left</span>');
+            throw new \coinmonkey\exceptions\ErrorException('The market ' . $market . ' can not give ' . $left);
         }
 
         $amount = array_sum($costs);

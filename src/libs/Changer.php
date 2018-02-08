@@ -37,12 +37,12 @@ class Changer implements InstantExchangerInterface
         $this->tool = new ChangerTool(new ChangerAuth($key, $secure));
     }
 
-    public function getExchangeStatus($id) : ?Status
+    public function getExchangeStatus($id, $payInAddress) : ?Status
     {
         $statusData = $this->tool->checkExchange($id);
 
         switch($statusData->status) {
-            case 'new': $status = OrderExchange::STATUS_WAIT_YOUR_TRANSACTION; break;
+            case 'new': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
             case 'processing': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
             case 'processed': $status = OrderExchange::STATUS_DONE; break;
             default: $status = OrderExchange::STATUS_FAIL; break;

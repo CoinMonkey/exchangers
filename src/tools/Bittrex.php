@@ -308,7 +308,7 @@ class Bittrex {
         $result = ($obj->success == true);
 
         if(!$result) {
-            throw new \coinmonkey\exceptions\ErrorException("bittrex buy $market, $amount, $rate ");
+            throw new \coinmonkey\exceptions\ErrorException("bittrex buy $amount $market ($rate) error " . $obj->message);
         }
 
         return $obj->result->uuid;
@@ -331,7 +331,7 @@ class Bittrex {
         $result = ($obj->success == true);
 
         if(!$result) {
-            throw new \coinmonkey\exceptions\ErrorException("bittrex sell $market, $amount, $rate");
+            throw new \coinmonkey\exceptions\ErrorException("bittrex sell $amount $market ($rate) error " . $obj->message);
         }
 
         return $obj->result->uuid;
@@ -462,7 +462,7 @@ class Bittrex {
         $return = [];
 
         foreach($result as $balance) {
-            $return[$balance->coin] = $balance->Balance;
+            $return[$balance->Currency] = $balance->Balance;
         }
 
         return $return;
