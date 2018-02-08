@@ -70,7 +70,7 @@ class Bittrex {
                 return [
                     'id' => $withdraw->PaymentUuid,
                     'txId' => $withdraw->TxId,
-                    'amount' => $withdraw->amount,
+                    'amount' => $withdraw->Amount,
                 ];
             }
         }

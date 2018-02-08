@@ -90,7 +90,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'returnOpenOrders',
-                'CoinPair' => strtoupper($pair)
+                'currencyPair' => strtoupper($pair)
             )
         );
     }
@@ -99,7 +99,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'returnTradeHistory',
-                'CoinPair' => strtoupper($pair)
+                'currencyPair' => strtoupper($pair)
             )
         );
     }
@@ -108,7 +108,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'buy',
-                'CoinPair' => strtoupper($pair),
+                'currencyPair' => strtoupper($pair),
                 'rate' => $rate,
                 'amount' => $amount
             )
@@ -119,7 +119,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'sell',
-                'CoinPair' => strtoupper($pair),
+                'currencyPair' => strtoupper($pair),
                 'rate' => $rate,
                 'amount' => $amount
             )
@@ -130,7 +130,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'cancelOrder',
-                'CoinPair' => strtoupper($pair),
+                'currencyPair' => strtoupper($pair),
                 'orderNumber' => $order_number
             )
         );
@@ -140,7 +140,7 @@ class Poloniex {
         return $this->query(
             array(
                 'command' => 'withdraw',
-                'Coin' => strtoupper($coin),
+                'currency' => strtoupper($coin),
                 'amount' => $amount,
                 'address' => $address
             )
@@ -148,12 +148,12 @@ class Poloniex {
     }
 
     public function get_trade_history($pair) {
-        $trades = $this->retrieveJSON($this->public_url.'?command=returnTradeHistory&CoinPair='.strtoupper($pair));
+        $trades = $this->retrieveJSON($this->public_url.'?command=returnTradeHistory&currencyPair='.strtoupper($pair));
         return $trades;
     }
 
     public function get_order_book($pair) {
-        $orders = $this->retrieveJSON($this->public_url.'?command=returnOrderBook&CoinPair='.strtoupper($pair));
+        $orders = $this->retrieveJSON($this->public_url.'?command=returnOrderBook&currencyPair='.strtoupper($pair));
         return $orders;
     }
 

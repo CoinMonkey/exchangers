@@ -27,7 +27,7 @@ class Poloniex
         foreach($result['deposits'] as $deposit) {
             $tdiff = time()-$deposit['timestamp'];
 
-            if($deposit['сoin'] == $coin && $deposit['amount'] == $amount && $tdiff < $time) {
+            if($deposit['currency'] == $coin && $deposit['amount'] == $amount && $tdiff < $time) {
                 return [
                     'id' => null,
                     'confirmations' => $deposit['confirmations'],
@@ -50,7 +50,11 @@ class Poloniex
 
             $realAmount = $withdrawal['amount']-$this->tool->getWithdrawalFee($coin);
 
-            if($address == $withdrawal['address'] && $withdrawal['Coin'] == $coin && (string) $realAmount == (string) $amount && $tdiff < $time) {
+            if($address == $withdrawal['address'] && $withdrawal['currency'] == $coin && (string) $realAmount == (string) $amount && $tdiff < $time) {
+                if(substr_count($withdrawal['status'], 'PENDING')) {
+                    return null;
+                }
+
                 if(!isset($withdrawal['txid'])) {
                     $status = explode(': ', $withdrawal['status']);
                     $withdrawal['txid'] = end($status);
@@ -73,7 +77,7 @@ class Poloniex
         $result = $this->tool->withdraw($coin, $amount, $address);
 
         if(!isset($result['response'])) {
-            throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make a withdraw a withdraw to $address $amount of $coin ");
+            throw new \coinmonkey\exceptions\ErrorException("Poloniex can't make a withdraw a withdraw to $address $amount of $coin " . $result['error']);
         }
 
         return '1';
@@ -174,7 +178,7 @@ class Poloniex
         $result = $this->tool->buy($this->retransformMarket($market), $rate, $amount);
 
         if(isset($result['error'])) {
-            throw new \coinmonkey\exceptions\ErrorException("Poloniex coudn't buy $market, $amount, $rate");
+            throw new \coinmonkey\exceptions\ErrorException("Poloniex couldn't buy $market $amount, ($rate) error " . $result['error']);
         }
 
         return $result['orderNumber'];
@@ -186,7 +190,7 @@ class Poloniex
         $result = $this->tool->sell($this->retransformMarket($market), $rate, $amount);
 
         if(isset($result['error'])) {
-            throw new \coinmonkey\exceptions\ErrorException("poloniex coudn't sell $market, $amount, $rate ");
+            throw new \coinmonkey\exceptions\ErrorException("poloniex couldn't sell $market $amount ($rate) error " . $result['error']);
         }
 
         return $result['orderNumber'];
