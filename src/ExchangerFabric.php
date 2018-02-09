@@ -9,6 +9,7 @@ use coinmonkey\interfaces\ExchangerInterface;
 class ExchangerFabric implements ExchangerFabricInterface
 {
     private $config = [];
+    private $name = null;
 
     public function __construct($config)
     {
@@ -17,6 +18,8 @@ class ExchangerFabric implements ExchangerFabricInterface
 
     public function buildInstant($exchangerName, $cache = true) :  InstantExchangerInterface
     {
+        $this->exchangerName = $exchangerName;
+
         switch($exchangerName) {
             case 'changer': return new libs\Changer($this->getConfig('CHANGER_API_NAME'), $this->getConfig('CHANGER_API_KEY'), $this->getConfig('CHANGER_API_SECURE'), $cache);
             case 'nexchange': return new libs\Nexchange($this->getConfig('CHANGER_API_NAME'), $this->getConfig('CHANGER_API_KEY'), $this->getConfig('CHANGER_API_SECURE'), $cache);
@@ -29,10 +32,17 @@ class ExchangerFabric implements ExchangerFabricInterface
 
     public function build($exchangerName, $cache = true) :  InstantExchangerInterface
     {
+        $this->exchangerName = $exchangerName;
+
         switch($exchangerName) {
             case 'poloniex': return new libs\Poloniex($this->getConfig('POLONIEX_API_KEY'), $this->getConfig('POLONIEX_API_SECRET'), $cache);
             case 'bittrex': return new libs\Bittrex($this->getConfig('BITTREX_API_KEY'), $this->getConfig('BITTREX_API_SECRET'), $cache);
         }
+    }
+
+    public function getName() : string
+    {
+        return $this->name;
     }
 
     private function getConfig($key)

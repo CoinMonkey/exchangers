@@ -6,7 +6,6 @@ use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Changelly as ChangellyTool;
@@ -39,18 +38,18 @@ class Changelly implements InstantExchangerInterface
         $statusId = $this->tool->request('getStatus', ['id' => $id]);
 
         switch($statusId) {
-            case 'waiting': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
-            case 'confirming': $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
-            case 'exchanging': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-            case 'sending': $status = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
-            case 'finished': $status = OrderExchange::STATUS_DONE; break;
-            default: $status = OrderExchange::STATUS_FAIL; break;
+            case 'waiting': $status = Status::STATUS_WAIT_CLIENT_TRANSACTION; break;
+            case 'confirming': $status = Status::STATUS_WAIT_EXCHANGER_PROCESSING; break;
+            case 'exchanging': $status = Status::STATUS_EXCHANGER_PROCESSING; break;
+            case 'sending': $status = Status::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
+            case 'finished': $status = Status::STATUS_DONE; break;
+            default: $status = Status::STATUS_FAIL; break;
         }
 
         $tx1 = null;
         $tx2 = null;
 
-        if($status == OrderExchange::STATUS_DONE) {
+        if($status == Status::STATUS_DONE) {
             if($txes = $this->tool->request('getTransactions', ['address' => $address, "limit" => 10, "offset" => 0])) {
                 foreach($txes as $key => $tx) {
                     $tx1 = $tx->payinHash;

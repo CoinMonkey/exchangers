@@ -6,7 +6,6 @@ use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Changer as ChangerTool;
@@ -42,10 +41,10 @@ class Changer implements InstantExchangerInterface
         $statusData = $this->tool->checkExchange($id);
 
         switch($statusData->status) {
-            case 'new': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
-            case 'processing': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-            case 'processed': $status = OrderExchange::STATUS_DONE; break;
-            default: $status = OrderExchange::STATUS_FAIL; break;
+            case 'new': $status = Status::STATUS_WAIT_CLIENT_TRANSACTION; break;
+            case 'processing': $status = Status::STATUS_EXCHANGER_PROCESSING; break;
+            case 'processed': $status = Status::STATUS_DONE; break;
+            default: $status = Status::STATUS_FAIL; break;
         }
 
         $tx1 = null;
@@ -63,7 +62,7 @@ class Changer implements InstantExchangerInterface
         $give = $this->getCoinName($amount->getCoin()->getCode());
         $get = $this->getCoinName($coin2->getCode());
         if(!$give | !$get) {
-            throw new \coinmonkey\exceptions\ErrorException('Market don\'t exists');
+            throw new \coinmonkey\exceptions\ErrorException('Market not found');
         }
         $limits = $this->tool->getLimits($give, $get);
 

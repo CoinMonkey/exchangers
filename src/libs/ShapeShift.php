@@ -2,12 +2,11 @@
 
 namespace coinmonkey\exchangers\libs;
 
+use \Achse\ShapeShiftIo\Client;
 use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
-use \Achse\ShapeShiftIo\Client;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 
@@ -40,10 +39,10 @@ class ShapeShift implements InstantExchangerInterface
         $order = $this->tool->getStatusOfDepositToAddress($id);
 
         switch($order->status) {
-            case 'no_deposits': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
-            case 'received': $status = OrderExchange::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
-            case 'complete': $status = OrderExchange::STATUS_DONE; break;
-            default: $status = OrderExchange::STATUS_FAIL; break;
+            case 'no_deposits': $status = Status::STATUS_WAIT_CLIENT_TRANSACTION; break;
+            case 'received': $status = Status::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
+            case 'complete': $status = Status::STATUS_DONE; break;
+            default: $status = Status::STATUS_FAIL; break;
         }
 
         $tx1 = null;

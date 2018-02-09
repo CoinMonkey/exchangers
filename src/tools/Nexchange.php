@@ -27,9 +27,11 @@ class Nexchange
 
         $direction = $this->getDirection($depositCoin, $destinationCoin);
 
-        if(!$result[0] | !$price = $result[0]->ticker->{$direction}) {
-            throw new \App\Exceptions\ErrorException('Error while taking price ');
+        if(!$result[0] | !isset($result[0]->ticker)) {
+            throw new \App\Exceptions\ErrorException('Market not found');
         }
+
+        $price = $result[0]->ticker->{$direction};
 
         if($direction != 'bid') {
             return $amount/$price;
@@ -55,7 +57,7 @@ class Nexchange
     public function createAnonymousOrder($depositCoin, $destinationCoin, $amount, $address)
     {
         $data = [
-            "amount_base" => $amount,
+            "amount_quote" => $amount,
             "is_default_rule" => false,
             "pair" =>  [
                 "name" => $this->getPairName($depositCoin, $destinationCoin)
@@ -146,11 +148,11 @@ class Nexchange
     {
         foreach($this->getPairs() as $pairName => $pair) {
             if($depositCoin == $pair['quote'] && $destinationCoin == $pair['base']) {
-                return 'bid';
+                return 'ask';
             }
 
             if($depositCoin == $pair['base'] && $destinationCoin == $pair['quote']) {
-                return 'ask';
+                return 'bid';
             }
         }
 

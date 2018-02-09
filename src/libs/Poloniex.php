@@ -11,7 +11,6 @@ use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
-use coinmonkey\entities\Order as OrderExchange;
 
 class Poloniex implements ExchangerInterface, InstantExchangerInterface
 {
@@ -264,7 +263,7 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
         }
 
         if($left > 0) {
-            throw new \Exception('The market ' . $market . ' can not give ' . $left . '</span>');
+            throw new \Exception('The market ' . $market . ' maximum is ' . $left);
         }
 
         $amount = array_sum($costs);
@@ -322,7 +321,11 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
         $var1 = $coin1->getCode() . '_' . $coin2->getCode();
         $var2 = $coin2->getCode() . '_' . $coin1->getCode();
 
-        return in_array($var1, $markets) ? $var1 : $var2;
+        if(!array_key_exists($var1, $markets) && !array_key_exists($var2, $markets)) {
+            throw new \coinmonkey\exceptions\ErrorException('Market not found');
+        }
+
+        return array_key_exists($var1, $markets) ? $var1 : $var2;
     }
 
     private function compileOrderBook($orderBook)

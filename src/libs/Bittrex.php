@@ -8,7 +8,6 @@ use coinmonkey\exchangers\tools\Bittrex as BittrexTool;
 use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 
@@ -145,7 +144,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
         $orderBook = $this->getOrderBook($market);
 
         if(!$orderBook[$direction]) {
-            throw new \coinmonkey\exceptions\ErrorException('Can not find ' . $market . ' on Bittrex');
+            throw new \coinmonkey\exceptions\ErrorException('Market not found');
         }
 
         $left = $amount->getAmount();
@@ -315,6 +314,10 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
     {
         $var1 = $coin1->getCode() . '-' . $coin2->getCode();
         $var2 = $coin2->getCode() . '-' . $coin1->getCode();
+
+        if(!in_array($var1, $markets) && !in_array($var2, $markets)) {
+            throw new \coinmonkey\exceptions\ErrorException('Market not found');
+        }
 
         return in_array($var1, $markets) ? $var1 : $var2;
     }

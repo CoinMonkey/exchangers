@@ -6,7 +6,6 @@ use coinmonkey\interfaces\InstantExchangerInterface;
 use coinmonkey\interfaces\OrderInterface;
 use coinmonkey\interfaces\AmountInterface;
 use coinmonkey\interfaces\CoinInterface;
-use coinmonkey\entities\Order as OrderExchange;
 use coinmonkey\entities\Amount;
 use coinmonkey\entities\Status;
 use coinmonkey\exchangers\tools\Nexchange as NexchangeTool;
@@ -41,25 +40,30 @@ class Nexchange implements InstantExchangerInterface
     {
         $nxOrder = $this->tool->getOrder($id);
 
-        $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION;
+        $status = Status::STATUS_WAIT_CLIENT_TRANSACTION;
 
         if(isset($nxOrder->status_name)) {
             switch($nxOrder->status_name[0][0]) {
-                case '11': $status = OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION; break;
-                case '12': $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING; break;
-                case '13': $status = OrderExchange::STATUS_EXCHANGER_PROCESSING; break;
-                case '15': $status = OrderExchange::STATUS_DONE; break;
-                default: $status = OrderExchange::STATUS_DONE; break;
+                case '11': $status = Status::STATUS_WAIT_CLIENT_TRANSACTION; break;
+                case '12': $status = Status::STATUS_WAIT_EXCHANGER_PROCESSING; break;
+                case '13': $status = Status::STATUS_EXCHANGER_PROCESSING; break;
+                case '14': $status = Status::STATUS_EXCHANGER_PROCESSING; break;
+                case '15': $status = Status::STATUS_DONE; break;
+                default: $status = Status::STATUS_FAIL; break;
             }
         }
 
         $tx1 = null;
         $tx2 = null;
 
+        if($status == Status::STATUS_DONE && !isset($nxOrder->transactions)) {
+            $status = Status::STATUS_WAIT_EXCHANGER_TRANSACTION;
+        }
+
         if(isset($nxOrder->transactions)) {
             foreach($nxOrder->transactions as $nctrx) {
-                if($status == OrderExchange::STATUS_WAIT_CLIENT_TRANSACTION && $nctrx->type == 'D') {
-                    $status = OrderExchange::STATUS_WAIT_EXCHANGER_PROCESSING;
+                if($status == Status::STATUS_WAIT_CLIENT_TRANSACTION && $nctrx->type == 'D') {
+                    $status = Status::STATUS_WAIT_EXCHANGER_PROCESSING;
                 }
 
                 if($nctrx->type == 'W') {
