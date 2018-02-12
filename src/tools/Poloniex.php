@@ -48,7 +48,7 @@ class Poloniex
         foreach($result['withdrawals'] as $withdrawal) {
             $tdiff = time()-$withdrawal['timestamp'];
 
-            $realAmount = $withdrawal['amount']-$this->tool->getWithdrawalFee($coin);
+            $realAmount = $withdrawal['amount']-$this->getWithdrawalFee($coin);
 
             if($address == $withdrawal['address'] && $withdrawal['currency'] == $coin && (string) $realAmount == (string) $amount && $tdiff < $time) {
                 if(substr_count($withdrawal['status'], 'PENDING')) {
