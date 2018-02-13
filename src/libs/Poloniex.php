@@ -318,14 +318,14 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
 
     private static function getMarketName($markets, CoinInterface $coin1, CoinInterface $coin2)
     {
-        $var1 = $coin1->getCode() . '_' . $coin2->getCode();
-        $var2 = $coin2->getCode() . '_' . $coin1->getCode();
+        $var1 = $coin1->getCode() . '-' . $coin2->getCode();
+        $var2 = $coin2->getCode() . '-' . $coin1->getCode();
 
-        if(!array_key_exists($var1, $markets) && !array_key_exists($var2, $markets)) {
+        if(!in_array($var1, $markets) && !in_array($var2, $markets)) {
             throw new \coinmonkey\exceptions\ErrorException('Market not found');
         }
 
-        return array_key_exists($var1, $markets) ? $var1 : $var2;
+        return in_array($var1, $markets) ? $var1 : $var2;
     }
 
     private function compileOrderBook($orderBook)
@@ -335,14 +335,6 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
                 'asks' => [],
                 'bids' => [],
             ];
-        }
-
-        foreach($orderBook['bids'] as &$offer) {
-            $offer['exchanger'] = $this;
-        }
-
-        foreach($orderBook['asks'] as &$offer) {
-            $offer['exchanger'] = $this;
         }
 
         return $orderBook;
