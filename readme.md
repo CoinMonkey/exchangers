@@ -1,6 +1,6 @@
 # PHP libraries for a popular crypto-exchangers
 
-This libraries working for a finding the best rates and make an exchanges via singe polymorfing fabric.
+This libraries work for a find the best rates and make an exchanges via singe polymorfing fabric.
 
 The following methods are available for Poloniex, Bittrex (classic exchangers), Shapeshift, Changer, Changelly, Nexchange (instant exchangers).
 
