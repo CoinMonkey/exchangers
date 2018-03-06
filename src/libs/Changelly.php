@@ -50,11 +50,11 @@ class Changelly implements InstantExchangerInterface
         $tx2 = null;
 
         if($status == Status::STATUS_DONE) {
-            if($txes = $this->tool->request('getTransactions', ['address' => $address, "limit" => 10, "offset" => 0])) {
+            if($txes = $this->tool->request('getTransactions', ['address' => $payInAddress, "limit" => 10, "offset" => 0])) {
                 foreach($txes as $key => $tx) {
                     $tx1 = $tx->payinHash;
                     $tx2 = $tx->payoutHash;
-				}
+		}
             }
         }
 
