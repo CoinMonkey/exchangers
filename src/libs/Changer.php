@@ -24,7 +24,7 @@ class Changer implements InstantExchangerInterface
 
     public function getId() : string
     {
-        return self::STRIND_ID;
+        return self::STRING_ID;
     }
 
     public function __construct($name, $key, $secure, $cache = null)

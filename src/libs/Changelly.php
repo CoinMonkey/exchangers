@@ -22,7 +22,7 @@ class Changelly implements InstantExchangerInterface
 
     public function getId() : string
     {
-        return self::STRIND_ID;
+        return self::STRING_ID;
     }
 
     public function __construct($key, $secret, $cache = true)

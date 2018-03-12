@@ -28,7 +28,7 @@ class Nexchange implements InstantExchangerInterface
 
     public function getId() : string
     {
-        return self::STRIND_ID;
+        return self::STRING_ID;
     }
 
     public function withdraw(string $address, AmountInterface $amount)
