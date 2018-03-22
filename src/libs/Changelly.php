@@ -76,7 +76,7 @@ class Changelly implements InstantExchangerInterface
 
     public function getMinAmount(CoinInterface $coin, CoinInterface $coin2) : ?int
     {
-        return $this->tool->getMinimum($coin->getCode(), $coin2->getCode());
+        return $this->tool->request('getMinAmount', ['from' => $coin->getCode(), 'to' => $coin2->getCode()]);
     }
 
     public function getMaxAmount(CoinInterface $coin, CoinInterface $coin2) : ?int

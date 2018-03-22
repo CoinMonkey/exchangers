@@ -265,7 +265,7 @@ class Bittrex {
             'rate' => $order->Limit,
             'price' => $price,
             'Amount' => $order->Quantity,
-            'Amount_remaining' => $order->QuantityRemaining,
+            'QuantityRemaining' => $order->QuantityRemaining,
         ];
     }
 
@@ -377,7 +377,7 @@ class Bittrex {
                 'deal' => ($order->OrderType == 'LIMIT_BUY') ? 'buy' : 'sell',
                 'rate' => $order->Price,
                 'Amount' => $order->Quantity,
-                'Amount_remaining' => $order->QuantityRemaining,
+                'QuantityRemaining' => $order->QuantityRemaining,
             ];
         }
 

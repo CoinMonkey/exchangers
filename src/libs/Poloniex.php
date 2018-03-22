@@ -105,7 +105,7 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
 
         return $this->getOrder($id, $market);
     }
-
+    
     public function getRate(AmountInterface $amount, CoinInterface $coin2)
     {
         $estimateGetAmount = $this->getEstimateAmount($amount, $coin2);
@@ -123,7 +123,13 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
 
     public function getOrder(string $id, $market = '') : ?array
     {
-        $result = $this->tool->getOrder($id, $market);
+        for($i = 1; $i <= 11; $i++) {
+            if($result = $this->tool->getOrder($id, $market)) {
+                break;
+            }
+            
+            sleep(1);
+        }
 
         if(!$result) {
             return null;

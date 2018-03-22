@@ -154,19 +154,31 @@ class Poloniex
     {
         $result = $this->tool->get_my_trade_history($this->retransformMarket($market));
 
+        $data = [
+            'open' => false,
+            'market' => $this->transformMarket($market),
+            'price' => 0,
+        ];
+        
+        $found = false;
+        
         foreach($result as $order) {
             if($order["orderNumber"] == $id) {
-                return [
-                    'open' => false,
-                    'market' => $this->transformMarket($market),
-                    'time' => strtotime($order['date']),
-                    'deal' => $order['type'],
-                    'price' => ($order['type'] == 'sell') ? $order['total'] : $order['amount'],
-                    'rate' => $order['rate'],
-                    'Amount' => $order['amount'],
-                    'Amount_remaining' => $order['amount'],
-                ];
+                $field = ($order['type'] == 'sell') ? 'total' : 'amount';
+
+                $data['price'] += ($order['type'] == 'sell') ? $order['total'] : $order['amount'];
+                $data['rate'] = $order['rate'];
+                $data['time'] = strtotime($order['date']);
+                $data['deal'] = $order['type'];
+                
+                if($data['price'] >= $order[$field]) {
+                    $found = true;
+                }
             }
+        }
+        
+        if($found) {
+            return $data;
         }
 
         return false;
