@@ -78,7 +78,7 @@ class Bittrex {
         return false;
     }
 
-    public function checkDeposit($coin, $amount, $time)
+    public function checkDeposit($coin, $amount, $time, $uncertainty = false)
     {
         $uri = 'https://bittrex.com/api/v1.1/account/getdeposithistory?apikey=' . $this->key . '&currency=' . $coin . '&nonce=' . time();
 
@@ -98,7 +98,19 @@ class Bittrex {
         foreach($result->result as $deposit) {
             $tdiff = time()-strtotime($deposit->LastUpdated);
 
-            if($deposit->Amount == $amount && $tdiff < $time) {
+            $rightAmount = false;
+            if(!$uncertainty) {
+                $rightAmount = ($deposit->Amount == $amount);
+            } else {
+                if($deposit->Amount <= $amount) {
+                    $diff = round((1 - $deposit->Amount / $amount) * 100, 8);
+                    if($diff <= $uncertainty) {
+                        $rightAmount = true;
+                    }
+                }
+            }
+            
+            if($rightAmount && $tdiff < $time) {
                 return [
                     'id' => $deposit->Id,
                     'confirmations' => $deposit->Confirmations,
@@ -115,7 +127,7 @@ class Bittrex {
     {
         $currencies = $this->getCurrencies();
 
-        return $currencies[$currency]->TxFee;
+        if(isset($currencies[$currency])) return $currencies[$currency]->TxFee;
     }
 
     public function getMinConfirmations($currency)

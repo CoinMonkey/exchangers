@@ -20,14 +20,27 @@ class Poloniex
         $this->cache = $cache;
     }
 
-    public function checkDeposit($coin, $amount, $time)
+    public function checkDeposit($coin, $amount, $time, $uncertainty = false)
     {
         $result = $this->tool->get_deposit_withdraw_history($time);
 
         foreach($result['deposits'] as $deposit) {
             $tdiff = time()-$deposit['timestamp'];
 
-            if($deposit['currency'] == $coin && $deposit['amount'] == $amount && $tdiff < $time) {
+            $rightAmount = false;
+            if(!$uncertainty) {
+                $rightAmount = ($deposit['amount'] == $amount);
+            } else {
+                if($deposit['amount'] <= $amount) {
+                    $diff = round((1 - $deposit['amount'] / $amount) * 100, 8);
+
+                    if($diff <= $uncertainty) {
+                        $rightAmount = true;
+                    }
+                }
+            }
+            
+            if($deposit['currency'] == $coin && $rightAmount && $tdiff < $time) {
                 return [
                     'id' => null,
                     'confirmations' => $deposit['confirmations'],
@@ -90,8 +103,6 @@ class Poloniex
         if(isset($currencies[$currency])) {
             return $currencies[$currency]['txFee'];
         }
-
-        throw new \App\Exceptions\ErrorException("Poloniex API error (gwf)");
     }
 
     public function getMinConfirmations($currency) : int
@@ -150,38 +161,43 @@ class Poloniex
         ];
     }
 
-    public function getOrder(string $id, $market)
+    public function getOrder(string $id)
     {
-        $result = $this->tool->get_my_trade_history($this->retransformMarket($market));
-
-        $data = [
-            'open' => false,
-            'market' => $this->transformMarket($market),
-            'price' => 0,
-        ];
+        $result = $this->tool->get_my_order_trades($id);
         
-        $found = false;
+        if(!$result) {
+            return false;
+        }
+        
+        $price = 0;
+        $complete = false;
         
         foreach($result as $order) {
-            if($order["orderNumber"] == $id) {
-                $field = ($order['type'] == 'sell') ? 'total' : 'amount';
-
-                $data['price'] += ($order['type'] == 'sell') ? $order['total'] : $order['amount'];
-                $data['rate'] = $order['rate'];
-                $data['time'] = strtotime($order['date']);
-                $data['deal'] = $order['type'];
-                
-                if($data['price'] >= $order[$field]) {
-                    $found = true;
-                }
+            $field = ($order['type'] == 'sell') ? 'total' : 'amount';
+            $price += ($order['type'] == 'sell') ? $order['total'] : $order['amount'];
+            if($price >= $order[$field]) {
+                $complete = true;
             }
+            $price = $price-($price*$order['fee']);
         }
         
-        if($found) {
-            return $data;
+        if(!$complete) {
+            return false;
         }
-
-        return false;
+        
+        $price = round($price, 8);
+        
+        return [
+            'open' => false,
+            'price' => $price,
+            'rate' => $order['rate'],
+            'time' => strtotime($order['date']),
+            'deal' => $order['type'],
+            'fee' => $order['fee'],
+            'total' => $order['total'],
+            'id' => $id,
+            'tradesCount' => count($result),
+        ];
     }
 
     public function buy($market, $amount, $rate)

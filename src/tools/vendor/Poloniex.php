@@ -95,6 +95,15 @@ class Poloniex {
         );
     }
 
+    public function get_my_order_trades($id) {
+        return $this->query(
+            array(
+                'command' => 'returnOrderTrades',
+                'orderNumber' => $id
+            )
+        );
+    }
+    
     public function get_my_trade_history($pair) {
         return $this->query(
             array(

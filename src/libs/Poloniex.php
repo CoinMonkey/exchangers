@@ -36,7 +36,7 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
 
     public function checkDeposit(AmountInterface $amount, int $time)
     {
-        return $this->tool->checkDeposit($amount->getCoin()->getCode(), $amount->getAmount(), $time);
+        return $this->tool->checkDeposit($amount->getCoin()->getCode(), $amount->getAmount(), $time, $amount->getUncertainty());
     }
 
     public function checkWithdraw(AmountInterface $amount, $address, int $time)
@@ -96,14 +96,24 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
         $direction = $this->getDirection($amount->getCoin(), $coin2);
 
         $rate = $this->getRate($amount, $coin2);
+        $marketRate = $this->getMarketRate($rate, $direction);
 
         if($direction == 'bids') {
-            $id = $this->sell($market, $amount->getAmount(), $rate);
+            $id = $this->sell($market, $amount->getAmount(), $marketRate);
         } else {
-            $id = $this->buy($market, ($amount->getAmount()*(1/$rate)), $rate);
+            $id = $this->buy($market, ($amount->getAmount()*(1/$rate)), $marketRate);
         }
 
-        return $this->getOrder($id, $market);
+        return $this->getOrder($id);
+    }
+    
+    public function getMarketRate($rate, $direction)
+    {
+        if($direction == 'asks') {
+            return $rate*2;
+        } else {
+            return $rate/2;
+        }
     }
     
     public function getRate(AmountInterface $amount, CoinInterface $coin2)
@@ -121,10 +131,10 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
         return $rate;
     }
 
-    public function getOrder(string $id, $market = '') : ?array
+    public function getOrder(string $id) : ?array
     {
         for($i = 1; $i <= 11; $i++) {
-            if($result = $this->tool->getOrder($id, $market)) {
+            if($result = $this->tool->getOrder($id)) {
                 break;
             }
             
