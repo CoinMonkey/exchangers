@@ -262,14 +262,14 @@ class Bittrex {
         $order = $obj->result;
 
         if($order->Type != 'LIMIT_BUY') {
-            $price = $order->Quantity*$order->Limit;
+            $price = $order->Price;
         } else {
             $price = $order->Quantity;
         }
         $price = $price-($price*$this->getFees()['take']);
 
         return [
-            'raw_data' => $order,
+            //'raw_data' => $order,
             'open' => $order->IsOpen,
             'market' => $order->Exchange,
             'time' => strtotime($order->Opened),
