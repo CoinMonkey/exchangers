@@ -42,7 +42,7 @@ class Changenow implements InstantExchangerInterface
             case 'new': $status = Status::STATUS_WAIT_CLIENT_TRANSACTION; break;
             case 'waiting': $status = Status::STATUS_WAIT_CLIENT_TRANSACTION; break;
             case 'confirming': $status = Status::STATUS_WAIT_EXCHANGER_PROCESSING; break;
-            case 'exchanging': $satatus = Status::STATUS_EXCHANGER_PROCESSING; break;
+            case 'exchanging': $status = Status::STATUS_EXCHANGER_PROCESSING; break;
             case 'sending': $status = Status::STATUS_WAIT_EXCHANGER_TRANSACTION; break;
             case 'finished': $status = Status::STATUS_DONE; break;
             default: $status = Status::STATUS_FAIL; break;

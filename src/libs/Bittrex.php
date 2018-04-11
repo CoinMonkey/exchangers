@@ -322,8 +322,8 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
 
     private static function getMarketName($markets, CoinInterface $coin1, CoinInterface $coin2)
     {
-        $var1 = $coin1->getCode() . '-' . $coin2->getCode();
-        $var2 = $coin2->getCode() . '-' . $coin1->getCode();
+        $var1 = str_replace('BCH', 'BCC', $coin1->getCode() . '-' . $coin2->getCode());
+        $var2 = str_replace('BCH', 'BCC', $coin2->getCode() . '-' . $coin1->getCode());
 
         if(!in_array($var1, $markets) && !in_array($var2, $markets)) {
             throw new \coinmonkey\exceptions\ErrorException('Market not found');
