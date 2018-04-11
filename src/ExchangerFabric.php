@@ -25,6 +25,7 @@ class ExchangerFabric implements ExchangerFabricInterface
             case 'nexchange': return new libs\Nexchange($this->getConfig('CHANGER_API_NAME'), $this->getConfig('CHANGER_API_KEY'), $this->getConfig('CHANGER_API_SECURE'), $cache);
             case 'changelly': return new libs\Changelly($this->getConfig('CHANGELLY_API_KEY'), $this->getConfig('CHANGELLY_API_SECRET'), $cache);
             case 'shapeshift': return new libs\ShapeShift($this->getConfig('SHAPESHIFT_API_KEY'), $this->getConfig('SHAPESHIFT_API_SECRET'), $cache);
+            case 'changenow': return new libs\Changenow($this->getConfig('CHANGENOW_API_KEY'), $this->getConfig('CHANGENOW_API_SECRET'), $cache);
             case 'poloniex': return new libs\Poloniex($this->getConfig('POLONIEX_API_KEY'), $this->getConfig('POLONIEX_API_SECRET'), $cache);
             case 'bittrex': return new libs\Bittrex($this->getConfig('BITTREX_API_KEY'), $this->getConfig('BITTREX_API_SECRET'), $cache);
         }

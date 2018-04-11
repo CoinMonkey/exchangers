@@ -2,7 +2,7 @@
 
 These libraries work for a find the best rates and make an exchanges via singe polymorfing fabric.
 
-The following methods are available for Poloniex, Bittrex (classic exchangers), Shapeshift, Changer, Changelly, Nexchange (instant exchangers).
+The following methods are available for Poloniex, Bittrex (classic exchangers), Shapeshift, Changer, Changelly, Nexchange, Changenow (instant exchangers).
 
 *  getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface;
 *  makeDepositAddress(string $clientAddress, AmountInterface $amount, CoinInterface $coin2) : array;
@@ -39,9 +39,9 @@ The following methods are available for a classic exchangers like a Poloniex and
 composer require coinmonkey/exchangers-api @dev
 ```
 
-Please note that libraries are in in development. Don't use it in production projects.
+Please note that libraries are in development. Don't use it in production projects.
 
-Production version coming soon (but I'm not sure).
+Production version coming soon.
 
 ## Example
 
@@ -70,6 +70,8 @@ $config = [
     'POLONIEX_API_SECRET' => env('POLONIEX_API_SECRET'),
     'BITTREX_API_KEY' => env('BITTREX_API_KEY'),
     'BITTREX_API_SECRET' => env('BITTREX_API_SECRET'),
+    'CHANGENOW_API_KEY' => env('CHANGENOW_API_KEY'),
+    'CHANGENOW_API_SECRET' => env('CHANGENOW_API_SECRET'),
 ];
 $fabric = new ExchangerFabric($config);
 

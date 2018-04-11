@@ -110,9 +110,9 @@ class Poloniex implements ExchangerInterface, InstantExchangerInterface
     public function getMarketRate($rate, $direction)
     {
         if($direction == 'asks') {
-            return $rate*2;
+            return $rate+($rate*0.02);
         } else {
-            return $rate/2;
+            return $rate-($rate*0.02);
         }
     }
     

@@ -35,6 +35,7 @@ class Bittrex {
 
         foreach($result->result as $withdraw) {
             $tdiff = time()-strtotime($withdraw->Opened);
+
             if($address == $withdraw->Address && $withdraw->Amount == $amount && $tdiff < $time) {
                 return [
                     'id' => $withdraw->PaymentUuid,
