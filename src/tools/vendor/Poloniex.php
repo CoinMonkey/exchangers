@@ -46,6 +46,7 @@ class Poloniex {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         // run the query
         $res = curl_exec($ch);
@@ -65,7 +66,7 @@ class Poloniex {
         $opts = array('http' =>
             array(
                 'method'  => 'GET',
-                'timeout' => 10
+                'timeout' => 3
             )
         );
         $context = stream_context_create($opts);

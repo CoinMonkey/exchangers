@@ -148,6 +148,7 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
     public function getEstimateAmount(AmountInterface $amount, CoinInterface $coin2) : AmountInterface
     {
         $market = self::getMarketName($this->getMarkets(), $amount->getCoin(), $coin2);
+        
         $direction = $this->getDirection($amount->getCoin(), $coin2);
         $rounding = PHP_ROUND_HALF_UP;
 
@@ -170,7 +171,6 @@ class Bittrex implements ExchangerInterface, InstantExchangerInterface
                 $boost = ($offer['amount'] * $offer['price']);
             }
 
-            //Не покрывает полностью
             if($boost <= $left) {
                 if($direction == 'bids') {
                     $amountClear = $offer['amount'] * $offer['price'];

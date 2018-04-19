@@ -24,6 +24,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -57,6 +58,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -87,6 +89,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -153,6 +156,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -176,6 +180,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -197,6 +202,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -256,6 +262,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -290,6 +297,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -313,6 +321,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -336,6 +345,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -358,6 +368,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -374,6 +385,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -405,6 +417,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -435,6 +448,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -465,6 +479,7 @@ class Bittrex {
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
         $execResult = curl_exec($ch);
 
@@ -498,6 +513,7 @@ class Bittrex {
             curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
             curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
             $execResult = curl_exec($ch);
 
@@ -524,6 +540,7 @@ class Bittrex {
             curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['apisign:' . hash_hmac('sha512', $uri, $this->secret)]);
             curl_setopt($ch, CURLOPT_TIMEOUT, 3000);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000);
 
             $execResult = curl_exec($ch);
 

@@ -248,7 +248,7 @@ class Poloniex
 
     public function getOrderBook(string $market)
     {
-        $content = file_get_contents('https://poloniex.com/public?command=returnOrderBook&currencyPair='.$this->retransformMarket($market).'&depth=10');
+        $content = file_get_contents('https://poloniex.com/public?command=returnOrderBook&currencyPair='.$this->retransformMarket($market).'&depth=10', false, $this->getHttpContext());
 
         $result = json_decode($content);
 
@@ -290,7 +290,7 @@ class Poloniex
 
     public function getMarkets() : array
     {
-        $content = file_get_contents('https://poloniex.com/public?command=returnTicker');
+        $content = file_get_contents('https://poloniex.com/public?command=returnTicker', false, $this->getHttpContext());
         $result = json_decode($content);
 
         $markets = [];
@@ -329,5 +329,12 @@ class Poloniex
             'take' => '0.0025',
             'make' => '0.0015',
         ];
+    }
+    
+    private function getHttpContext()
+    {
+        $opts = ['http' => ['timeout' => 3]];
+        
+        return stream_context_create($opts);
     }
 }
